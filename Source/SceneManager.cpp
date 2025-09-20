@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////////////////
 // shadermanager.cpp
 // ============
 // manage the loading and rendering of 3D scenes
@@ -390,6 +390,9 @@ void SceneManager::PrepareScene()
 	// Load our coffee mug components
 	m_basicMeshes->LoadCylinderMesh();  // Main mug body
 	m_basicMeshes->LoadTorusMesh();     // Handle and base rim
+
+	// Set vertical adjustment for mug components
+	m_mugVerticalOffset = -1.3f;
 }
 
 /***********************************************************
@@ -414,31 +417,6 @@ void SceneManager::RenderScene()
 	RenderMugBody();
 	RenderMugHandle();
 	RenderMugBase();
-}
-
-/***********************************************************
- *  RenderMugBody()
- *
- *  Renders the main cylindrical body of the coffee mug
- ***********************************************************/
-void SceneManager::RenderMugBody()
-{
-	// Set transformations for mug body
-	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
-	float XrotationDegrees = 0.0f;  // Upright cylinder
-	float YrotationDegrees = 0.0f;
-	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.5f, 0.0f);  // Sitting on plane
-
-	// Apply transformations
-	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
-		ZrotationDegrees, positionXYZ);
-
-	// Set mug body color (light gray/white)
-	SetShaderColor(0.9f, 0.9f, 0.9f, 1.0f);
-
-	// Draw the cylinder
-	m_basicMeshes->DrawCylinderMesh();
 }
 
 /***********************************************************
@@ -467,6 +445,31 @@ void SceneManager::RenderTablePlane()
 }
 
 /***********************************************************
+ *  RenderMugBody()
+ *
+ *  Renders the main cylindrical body of the coffee mug
+ ***********************************************************/
+void SceneManager::RenderMugBody()
+{
+	// Set transformations for mug body
+	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
+	float XrotationDegrees = 0.0f;  // Upright cylinder
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.5f + m_mugVerticalOffset, 0.0f);  // Sitting on plane
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+
+	// Set mug body color (light gray/white)
+	SetShaderColor(0.9f, 0.9f, 0.9f, 1.0f);
+
+	// Draw the cylinder
+	m_basicMeshes->DrawCylinderMesh();
+}
+
+/***********************************************************
  *  RenderMugHandle()
  *
  *  Renders the torus handle attached to the side of the mug
@@ -478,7 +481,7 @@ void SceneManager::RenderMugHandle()
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 90.0f;  // Rotate around Z to make it vertical
-	glm::vec3 positionXYZ = glm::vec3(1.28f, 3.08f, 0.0f);  // Side of mug, middle height
+	glm::vec3 positionXYZ = glm::vec3(1.28f, 3.08f + m_mugVerticalOffset, 0.0f);  // Side of mug, middle height
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -499,13 +502,13 @@ void SceneManager::RenderMugHandle()
 void SceneManager::RenderMugBase()
 {
 	// Set transformations for mug base rim
-	glm::vec3 scaleXYZ = glm::vec3(1.0f, 1.0f, 1.0f);  // Smaller than mug body (1.2f), thicker
+	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);  // Smaller than mug body (1.2f), thicker
 	float XrotationDegrees = 90.0f;  // Flat on ground
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.175f, 0.0f);  // Just above plane
 
-	// Apply transformations (Scale ? Rotate ? Translate)
+	// Apply transformations (Scale → Rotate → Translate)
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 

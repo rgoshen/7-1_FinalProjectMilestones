@@ -103,6 +103,9 @@ private:
 	void RenderMugBase();
 	void RenderTablePlane();
 
+	// Mug positioning offset for proper alignment
+	float m_mugVerticalOffset;
+
 public:
 
 	// The following methods are for the students to 
