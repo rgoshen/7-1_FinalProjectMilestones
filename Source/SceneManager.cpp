@@ -412,8 +412,9 @@ void SceneManager::RenderScene()
 
 	// Render the coffee mug components
 	RenderMugBody();
+	RenderMugHandle();
 
-	// TODO: Add handle and base in next steps
+	// TODO: Add base in next steps
 }
 
 /***********************************************************
@@ -464,4 +465,29 @@ void SceneManager::RenderTablePlane()
 
 	// Draw the plane
 	m_basicMeshes->DrawPlaneMesh();
+}
+
+/***********************************************************
+ *  RenderMugHandle()
+ *
+ *  Renders the torus handle attached to the side of the mug
+ ***********************************************************/
+void SceneManager::RenderMugHandle()
+{
+	// Set transformations for mug handle
+	glm::vec3 scaleXYZ = glm::vec3(0.8f, 0.4f, 0.3f);  // Narrower width, taller height, moderate thickness
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 90.0f;  // Rotate around Z to make it vertical
+	glm::vec3 positionXYZ = glm::vec3(1.28f, 3.08f, 0.0f);  // Side of mug, middle height
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+
+	// Set handle color (darker than mug body)
+	SetShaderColor(0.6f, 0.6f, 0.6f, 1.0f);
+
+	// Draw the torus
+	m_basicMeshes->DrawTorusMesh();
 }
