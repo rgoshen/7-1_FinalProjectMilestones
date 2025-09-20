@@ -400,14 +400,6 @@ void SceneManager::PrepareScene()
  ***********************************************************/
 void SceneManager::RenderScene()
 {
-	// Render the table surface
-	RenderTablePlane();
-
-	// Render the coffee mug components
-	RenderMugBody();
-	// TODO: Add handle and base in next steps
-	 
-	
 	// declare the variables for the transformations
 	glm::vec3 scaleXYZ;
 	float XrotationDegrees = 0.0f;
@@ -415,34 +407,13 @@ void SceneManager::RenderScene()
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ;
 
-	/*** Set needed transformations before drawing the basic mesh.  ***/
-	/*** This same ordering of code should be used for transforming ***/
-	/*** and drawing all the basic 3D shapes.						***/
-	/******************************************************************/
-	// set the XYZ scale for the mesh
-	scaleXYZ = glm::vec3(20.0f, 1.0f, 10.0f);
+	// Render the table surface
+	RenderTablePlane();
 
-	// set the XYZ rotation for the mesh
-	XrotationDegrees = 0.0f;
-	YrotationDegrees = 0.0f;
-	ZrotationDegrees = 0.0f;
+	// Render the coffee mug components
+	RenderMugBody();
 
-	// set the XYZ position for the mesh
-	positionXYZ = glm::vec3(0.0f, 0.0f, 0.0f);
-
-	// set the transformations into memory to be used on the drawn meshes
-	SetTransformations(
-		scaleXYZ,
-		XrotationDegrees,
-		YrotationDegrees,
-		ZrotationDegrees,
-		positionXYZ);
-
-	SetShaderColor(1, 1, 1, 1);
-
-	// draw the mesh with transformation values
-	m_basicMeshes->DrawPlaneMesh();
-	/****************************************************************/
+	// TODO: Add handle and base in next steps
 }
 
 /***********************************************************
@@ -453,11 +424,11 @@ void SceneManager::RenderScene()
 void SceneManager::RenderMugBody()
 {
 	// Set transformations for mug body
-	glm::vec3 scaleXYZ = glm::vec3(1.5f, 2.0f, 1.5f);  // Taller than wide
+	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
 	float XrotationDegrees = 0.0f;  // Upright cylinder
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.0f, 0.0f);  // Sitting on plane
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.5f, 0.0f);  // Sitting on plane
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -468,4 +439,29 @@ void SceneManager::RenderMugBody()
 
 	// Draw the cylinder
 	m_basicMeshes->DrawCylinderMesh();
+}
+
+/***********************************************************
+ *  RenderTablePlane()
+ *
+ *  Renders the table surface plane that objects sit on
+ ***********************************************************/
+void SceneManager::RenderTablePlane()
+{
+	// Set transformations for table plane
+	glm::vec3 scaleXYZ = glm::vec3(20.0f, 1.0f, 10.0f);  // Large flat surface
+	float XrotationDegrees = 0.0f;  // Flat on ground
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.0f, 0.0f);  // Ground level
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+
+	// Set table surface color (white)
+	SetShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// Draw the plane
+	m_basicMeshes->DrawPlaneMesh();
 }
