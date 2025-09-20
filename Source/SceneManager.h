@@ -97,6 +97,12 @@ private:
 	void SetShaderMaterial(
 		std::string materialTag);
 
+	// Coffee mug rendering methods
+	void RenderMugBody();
+	void RenderMugHandle();
+	void RenderMugBase();
+	void RenderTablePlane();
+
 public:
 
 	// The following methods are for the students to 
