@@ -58,6 +58,7 @@ ViewManager::ViewManager(
 	g_pCamera->Front = glm::vec3(0.0f, -0.5f, -2.0f);
 	g_pCamera->Up = glm::vec3(0.0f, 1.0f, 0.0f);
 	g_pCamera->Zoom = 80;
+	g_pCamera->MovementSpeed = 5.0f;  // Set movement speed to 5.0 units/second
 }
 
 /***********************************************************
@@ -138,6 +139,22 @@ void ViewManager::ProcessKeyboardEvents()
 	{
 		glfwSetWindowShouldClose(m_pWindow, true);
 	}
+
+	// WASD movement - camera relative directions
+	if (glfwGetKey(m_pWindow, GLFW_KEY_W) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(FORWARD, gDeltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_S) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(BACKWARD, gDeltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_A) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(LEFT, gDeltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_D) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(RIGHT, gDeltaTime);
+
+	// QE vertical movement - world Y-axis
+	if (glfwGetKey(m_pWindow, GLFW_KEY_Q) == GLFW_PRESS)
+		g_pCamera->Position.y += g_pCamera->MovementSpeed * gDeltaTime;
+	if (glfwGetKey(m_pWindow, GLFW_KEY_E) == GLFW_PRESS)
+		g_pCamera->Position.y -= g_pCamera->MovementSpeed * gDeltaTime;
 }
 
 /***********************************************************
