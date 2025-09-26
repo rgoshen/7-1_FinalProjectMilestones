@@ -58,7 +58,8 @@ ViewManager::ViewManager(
 	g_pCamera->Front = glm::vec3(0.0f, -0.5f, -2.0f);
 	g_pCamera->Up = glm::vec3(0.0f, 1.0f, 0.0f);
 	g_pCamera->Zoom = 80;
-	g_pCamera->MovementSpeed = 5.0f;  // Set movement speed to 5.0 units/second
+	g_pCamera->MovementSpeed = 2.5f;  // Default speed multiplier 2.5x (base 5.0 * 0.5)
+	g_pCamera->MouseSensitivity = 0.1f;  // Set mouse sensitivity for look controls
 }
 
 /***********************************************************
@@ -106,6 +107,11 @@ GLFWwindow* ViewManager::CreateDisplayWindow(const char* windowTitle)
 
 	// this callback is used to receive mouse moving events
 	glfwSetCursorPosCallback(window, &ViewManager::Mouse_Position_Callback);
+	// set the callback for handling mouse scroll events
+	glfwSetScrollCallback(window, &ViewManager::Mouse_Scroll_Callback);
+
+	// hide the cursor and lock it to the window
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// enable blending for supporting tranparent rendering
 	glEnable(GL_BLEND);
@@ -124,6 +130,45 @@ GLFWwindow* ViewManager::CreateDisplayWindow(const char* windowTitle)
  ***********************************************************/
 void ViewManager::Mouse_Position_Callback(GLFWwindow* window, double xMousePos, double yMousePos)
 {
+	// if this is the first time the mouse has moved, update the last position
+	// to the current position to prevent large jumps
+	if (gFirstMouse)
+	{
+		gLastX = xMousePos;
+		gLastY = yMousePos;
+		gFirstMouse = false;
+	}
+
+	// calculate the offset movement between the current and last position
+	float xOffset = xMousePos - gLastX;
+	float yOffset = gLastY - yMousePos;  // reversed since y-coordinates go from bottom to top
+
+	// update the last position for the next frame's offset calculation
+	gLastX = xMousePos;
+	gLastY = yMousePos;
+
+	// apply the mouse movement to the camera for looking around
+	g_pCamera->ProcessMouseMovement(xOffset, yOffset);
+}
+
+/***********************************************************
+ *  Mouse_Scroll_Callback()
+ *
+ *  This method is automatically called from GLFW whenever
+ *  the mouse scroll wheel is used within the active window.
+ ***********************************************************/
+void ViewManager::Mouse_Scroll_Callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	// adjust camera movement speed based on scroll
+	// yoffset is positive when scrolling up, negative when scrolling down
+	float speedChange = yoffset * 0.5f;  // 0.5x speed change per scroll step
+	g_pCamera->MovementSpeed += speedChange;
+
+	// clamp speed to range of 1.0 to 10.0
+	if (g_pCamera->MovementSpeed < 1.0f)
+		g_pCamera->MovementSpeed = 1.0f;
+	if (g_pCamera->MovementSpeed > 10.0f)
+		g_pCamera->MovementSpeed = 10.0f;
 }
 
 /***********************************************************
