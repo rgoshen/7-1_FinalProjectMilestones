@@ -504,3 +504,6 @@ FodyWeavers.xsd
 
 # debug information files
 *.dwo
+
+# misc
+CLAUDE.md
