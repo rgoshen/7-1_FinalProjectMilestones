@@ -17,28 +17,52 @@
 // declaration of the global variables and defines
 namespace
 {
-	// Variables for window width and height
+	// Window configuration constants
 	const int WINDOW_WIDTH = 1000;
 	const int WINDOW_HEIGHT = 800;
 	const char* g_ViewName = "view";
 	const char* g_ProjectionName = "projection";
 
-	// camera object used for viewing and interacting with
-	// the 3D scene
+	// Camera movement configuration constants
+	const float DEFAULT_MOVEMENT_SPEED = 2.5f;
+	const float MIN_MOVEMENT_SPEED = 1.0f;
+	const float MAX_MOVEMENT_SPEED = 10.0f;
+	const float MOVEMENT_SPEED_INCREMENT = 0.5f;
+	const float DEFAULT_MOUSE_SENSITIVITY = 0.1f;
+
+	// Orthographic projection configuration constants
+	const float DEFAULT_ORTHO_ZOOM = 10.0f;
+	const float MIN_ORTHO_ZOOM = 2.0f;
+	const float MAX_ORTHO_ZOOM = 20.0f;
+	const float ORTHO_ZOOM_INCREMENT = 0.5f;
+
+	// camera object used for viewing and interacting with the 3D scene
 	Camera* g_pCamera = nullptr;
 
-	// these variables are used for mouse movement processing
-	float gLastX = WINDOW_WIDTH / 2.0f;
-	float gLastY = WINDOW_HEIGHT / 2.0f;
-	bool gFirstMouse = true;
+	// mouse movement processing variables
+	float g_lastMouseX = WINDOW_WIDTH / 2.0f;
+	float g_lastMouseY = WINDOW_HEIGHT / 2.0f;
+	bool g_firstMouseMovement = true;
 
-	// time between current frame and last frame
-	float gDeltaTime = 0.0f; 
-	float gLastFrame = 0.0f;
+	// frame timing variables
+	float g_deltaTime = 0.0f;
+	float g_lastFrameTime = 0.0f;
 
-	// the following variable is false when orthographic projection
-	// is off and true when it is on
-	bool bOrthographicProjection = false;
+	// projection mode state variables
+	bool g_isOrthographicMode = false;
+	float g_orthographicZoomLevel = DEFAULT_ORTHO_ZOOM;
+
+	/**
+	 * @brief Clamps a value between minimum and maximum bounds
+	 * @param value The value to clamp
+	 * @param minVal The minimum allowed value
+	 * @param maxVal The maximum allowed value
+	 * @return The clamped value within the specified range
+	 */
+	inline float ClampValue(float value, float minVal, float maxVal)
+	{
+		return (value < minVal) ? minVal : (value > maxVal) ? maxVal : value;
+	}
 }
 
 /***********************************************************
@@ -46,18 +70,20 @@ namespace
  *
  *  The constructor for the class
  ***********************************************************/
-ViewManager::ViewManager(
-	ShaderManager *pShaderManager)
+ViewManager::ViewManager(ShaderManager* pShaderManager)
 {
-	// initialize the member variables
+	// initialize member variables
 	m_pShaderManager = pShaderManager;
-	m_pWindow = NULL;
+	m_pWindow = nullptr;
+
+	// create and configure camera with default parameters
 	g_pCamera = new Camera();
-	// default camera view parameters
 	g_pCamera->Position = glm::vec3(0.0f, 5.0f, 12.0f);
 	g_pCamera->Front = glm::vec3(0.0f, -0.5f, -2.0f);
 	g_pCamera->Up = glm::vec3(0.0f, 1.0f, 0.0f);
-	g_pCamera->Zoom = 80;
+	g_pCamera->Zoom = 80.0f;
+	g_pCamera->MovementSpeed = DEFAULT_MOVEMENT_SPEED;
+	g_pCamera->MouseSensitivity = DEFAULT_MOUSE_SENSITIVITY;
 }
 
 /***********************************************************
@@ -68,113 +94,197 @@ ViewManager::ViewManager(
 ViewManager::~ViewManager()
 {
 	// free up allocated memory
-	m_pShaderManager = NULL;
-	m_pWindow = NULL;
-	if (NULL != g_pCamera)
+	m_pShaderManager = nullptr;
+	m_pWindow = nullptr;
+	if (nullptr != g_pCamera)
 	{
 		delete g_pCamera;
-		g_pCamera = NULL;
+		g_pCamera = nullptr;
 	}
 }
 
 /***********************************************************
  *  CreateDisplayWindow()
  *
- *  This method is used to create the main display window.
+ *  Creates the main GLFW display window and configures input callbacks.
+ *  Sets up mouse capture, transparency support, and input event handling.
+ *
+ *  @param windowTitle - The title to display in the window title bar
+ *  @return GLFWwindow* - Pointer to the created window, or nullptr on failure
  ***********************************************************/
 GLFWwindow* ViewManager::CreateDisplayWindow(const char* windowTitle)
 {
 	GLFWwindow* window = nullptr;
 
-	// try to create the displayed OpenGL window
-	window = glfwCreateWindow(
-		WINDOW_WIDTH,
-		WINDOW_HEIGHT,
-		windowTitle,
-		NULL, NULL);
-	if (window == NULL)
+	// create the OpenGL display window
+	window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, windowTitle, nullptr, nullptr);
+	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
-		return NULL;
+		return nullptr;
 	}
 	glfwMakeContextCurrent(window);
 
-	// tell GLFW to capture all mouse events
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	// this callback is used to receive mouse moving events
+	// configure mouse input callbacks
 	glfwSetCursorPosCallback(window, &ViewManager::Mouse_Position_Callback);
+	glfwSetScrollCallback(window, &ViewManager::Mouse_Scroll_Callback);
 
-	// enable blending for supporting tranparent rendering
+	// hide and lock cursor to window center for camera controls
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// enable alpha blending for transparent rendering support
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	m_pWindow = window;
-
-	return(window);
+	return window;
 }
 
 /***********************************************************
  *  Mouse_Position_Callback()
  *
- *  This method is automatically called from GLFW whenever
- *  the mouse is moved within the active GLFW display window.
+ *  GLFW callback function for mouse movement events. Calculates mouse
+ *  movement deltas and applies them to camera orientation for look controls.
+ *
+ *  @param window - The GLFW window that received the event (unused)
+ *  @param xMousePos - Current mouse X position in screen coordinates
+ *  @param yMousePos - Current mouse Y position in screen coordinates
  ***********************************************************/
 void ViewManager::Mouse_Position_Callback(GLFWwindow* window, double xMousePos, double yMousePos)
 {
+	// prevent large camera jumps on first mouse movement
+	if (g_firstMouseMovement)
+	{
+		g_lastMouseX = xMousePos;
+		g_lastMouseY = yMousePos;
+		g_firstMouseMovement = false;
+	}
+
+	// calculate mouse movement deltas
+	float xOffset = xMousePos - g_lastMouseX;
+	float yOffset = g_lastMouseY - yMousePos;  // reversed: y-coordinates go bottom to top
+
+	// store current position for next frame's delta calculation
+	g_lastMouseX = xMousePos;
+	g_lastMouseY = yMousePos;
+
+	// apply mouse movement to camera orientation
+	g_pCamera->ProcessMouseMovement(xOffset, yOffset);
+}
+
+/***********************************************************
+ *  Mouse_Scroll_Callback()
+ *
+ *  GLFW callback function for mouse scroll wheel events. Adjusts camera
+ *  movement speed in perspective mode or view zoom in orthographic mode.
+ *
+ *  @param window - The GLFW window that received the event (unused)
+ *  @param xoffset - Horizontal scroll offset (unused)
+ *  @param yoffset - Vertical scroll offset (positive = up, negative = down)
+ ***********************************************************/
+void ViewManager::Mouse_Scroll_Callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (g_isOrthographicMode)
+	{
+		// adjust orthographic view zoom level
+		g_orthographicZoomLevel -= yoffset * ORTHO_ZOOM_INCREMENT;
+		g_orthographicZoomLevel = ClampValue(g_orthographicZoomLevel, MIN_ORTHO_ZOOM, MAX_ORTHO_ZOOM);
+	}
+	else
+	{
+		// adjust camera movement speed in perspective mode
+		float speedChange = yoffset * MOVEMENT_SPEED_INCREMENT;
+		g_pCamera->MovementSpeed += speedChange;
+		g_pCamera->MovementSpeed = ClampValue(g_pCamera->MovementSpeed, MIN_MOVEMENT_SPEED, MAX_MOVEMENT_SPEED);
+	}
 }
 
 /***********************************************************
  *  ProcessKeyboardEvents()
  *
- *  This method is called to process any keyboard events
- *  that may be waiting in the event queue.
+ *  Processes keyboard input for camera movement and projection mode switching.
+ *  Handles WASD movement, Q/E vertical movement, ESC to exit, and P/O for
+ *  projection mode toggling.
  ***********************************************************/
 void ViewManager::ProcessKeyboardEvents()
 {
-	// close the window if the escape key has been pressed
+	// exit application on ESC key
 	if (glfwGetKey(m_pWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(m_pWindow, true);
 	}
+
+	// WASD movement controls (camera-relative directions)
+	if (glfwGetKey(m_pWindow, GLFW_KEY_W) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(FORWARD, g_deltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_S) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(BACKWARD, g_deltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_A) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(LEFT, g_deltaTime);
+	if (glfwGetKey(m_pWindow, GLFW_KEY_D) == GLFW_PRESS)
+		g_pCamera->ProcessKeyboard(RIGHT, g_deltaTime);
+
+	// Q/E vertical movement controls (world Y-axis, perspective mode only)
+	if (!g_isOrthographicMode)
+	{
+		if (glfwGetKey(m_pWindow, GLFW_KEY_Q) == GLFW_PRESS)
+			g_pCamera->Position.y += g_pCamera->MovementSpeed * g_deltaTime;
+		if (glfwGetKey(m_pWindow, GLFW_KEY_E) == GLFW_PRESS)
+			g_pCamera->Position.y -= g_pCamera->MovementSpeed * g_deltaTime;
+	}
+
+	// projection mode switching controls
+	if (glfwGetKey(m_pWindow, GLFW_KEY_P) == GLFW_PRESS)
+		g_isOrthographicMode = false;  // switch to perspective mode
+	if (glfwGetKey(m_pWindow, GLFW_KEY_O) == GLFW_PRESS)
+		g_isOrthographicMode = true;   // switch to orthographic mode
 }
 
 /***********************************************************
  *  PrepareSceneView()
  *
- *  This method is used for preparing the 3D scene by loading
- *  the shapes, textures in memory to support the 3D scene 
- *  rendering
+ *  Prepares the 3D scene for rendering by calculating frame timing,
+ *  processing input events, and setting up view/projection matrices
+ *  based on the current projection mode (perspective or orthographic).
  ***********************************************************/
 void ViewManager::PrepareSceneView()
 {
 	glm::mat4 view;
 	glm::mat4 projection;
 
-	// per-frame timing
+	// calculate per-frame timing for smooth, frame-rate independent movement
 	float currentFrame = glfwGetTime();
-	gDeltaTime = currentFrame - gLastFrame;
-	gLastFrame = currentFrame;
+	g_deltaTime = currentFrame - g_lastFrameTime;
+	g_lastFrameTime = currentFrame;
 
-	// process any keyboard events that may be waiting in the 
-	// event queue
+	// process keyboard and mouse input events
 	ProcessKeyboardEvents();
 
-	// get the current view matrix from the camera
+	// get current camera view matrix
 	view = g_pCamera->GetViewMatrix();
 
-	// define the current projection matrix
-	projection = glm::perspective(glm::radians(g_pCamera->Zoom), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-	// if the shader manager object is valid
-	if (NULL != m_pShaderManager)
+	// create projection matrix based on current projection mode
+	if (g_isOrthographicMode)
 	{
-		// set the view matrix into the shader for proper rendering
+		// orthographic projection with adjustable zoom level
+		float aspectRatio = static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT);
+		projection = glm::ortho(-g_orthographicZoomLevel * aspectRatio, g_orthographicZoomLevel * aspectRatio,
+		                       -g_orthographicZoomLevel, g_orthographicZoomLevel, 0.1f, 100.0f);
+	}
+	else
+	{
+		// perspective projection with camera zoom (field of view)
+		projection = glm::perspective(glm::radians(g_pCamera->Zoom),
+		                            static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT),
+		                            0.1f, 100.0f);
+	}
+
+	// update shader uniforms with current matrices and camera position
+	if (nullptr != m_pShaderManager)
+	{
 		m_pShaderManager->setMat4Value(g_ViewName, view);
-		// set the view matrix into the shader for proper rendering
 		m_pShaderManager->setMat4Value(g_ProjectionName, projection);
-		// set the view position of the camera into the shader for proper rendering
 		m_pShaderManager->setVec3Value("viewPosition", g_pCamera->Position);
 	}
 }

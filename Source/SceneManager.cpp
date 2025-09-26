@@ -427,7 +427,7 @@ void SceneManager::RenderScene()
 void SceneManager::RenderTablePlane()
 {
 	// Set transformations for table plane
-	glm::vec3 scaleXYZ = glm::vec3(20.0f, 1.0f, 10.0f);  // Large flat surface
+	glm::vec3 scaleXYZ = glm::vec3(20.0f, 1.0f, 20.0f);  // 20x20 unit square plane
 	float XrotationDegrees = 0.0f;  // Flat on ground
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
