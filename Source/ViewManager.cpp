@@ -39,6 +39,9 @@ namespace
 	// the following variable is false when orthographic projection
 	// is off and true when it is on
 	bool bOrthographicProjection = false;
+
+	// orthographic zoom level for adjusting view size
+	float gOrthoZoom = 10.0f;
 }
 
 /***********************************************************
@@ -159,16 +162,30 @@ void ViewManager::Mouse_Position_Callback(GLFWwindow* window, double xMousePos, 
  ***********************************************************/
 void ViewManager::Mouse_Scroll_Callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	// adjust camera movement speed based on scroll
-	// yoffset is positive when scrolling up, negative when scrolling down
-	float speedChange = yoffset * 0.5f;  // 0.5x speed change per scroll step
-	g_pCamera->MovementSpeed += speedChange;
+	if (bOrthographicProjection)
+	{
+		// In orthographic mode, adjust the view size
+		gOrthoZoom -= yoffset * 0.5f;  // Zoom in/out
 
-	// clamp speed to range of 1.0 to 10.0
-	if (g_pCamera->MovementSpeed < 1.0f)
-		g_pCamera->MovementSpeed = 1.0f;
-	if (g_pCamera->MovementSpeed > 10.0f)
-		g_pCamera->MovementSpeed = 10.0f;
+		// Clamp ortho zoom to reasonable range
+		if (gOrthoZoom < 2.0f)
+			gOrthoZoom = 2.0f;
+		if (gOrthoZoom > 20.0f)
+			gOrthoZoom = 20.0f;
+	}
+	else
+	{
+		// In perspective mode, adjust camera movement speed
+		// yoffset is positive when scrolling up, negative when scrolling down
+		float speedChange = yoffset * 0.5f;  // 0.5x speed change per scroll step
+		g_pCamera->MovementSpeed += speedChange;
+
+		// clamp speed to range of 1.0 to 10.0
+		if (g_pCamera->MovementSpeed < 1.0f)
+			g_pCamera->MovementSpeed = 1.0f;
+		if (g_pCamera->MovementSpeed > 10.0f)
+			g_pCamera->MovementSpeed = 10.0f;
+	}
 }
 
 /***********************************************************
@@ -195,11 +212,20 @@ void ViewManager::ProcessKeyboardEvents()
 	if (glfwGetKey(m_pWindow, GLFW_KEY_D) == GLFW_PRESS)
 		g_pCamera->ProcessKeyboard(RIGHT, gDeltaTime);
 
-	// QE vertical movement - world Y-axis
-	if (glfwGetKey(m_pWindow, GLFW_KEY_Q) == GLFW_PRESS)
-		g_pCamera->Position.y += g_pCamera->MovementSpeed * gDeltaTime;
-	if (glfwGetKey(m_pWindow, GLFW_KEY_E) == GLFW_PRESS)
-		g_pCamera->Position.y -= g_pCamera->MovementSpeed * gDeltaTime;
+	// QE vertical movement - world Y-axis (only in perspective mode)
+	if (!bOrthographicProjection)
+	{
+		if (glfwGetKey(m_pWindow, GLFW_KEY_Q) == GLFW_PRESS)
+			g_pCamera->Position.y += g_pCamera->MovementSpeed * gDeltaTime;
+		if (glfwGetKey(m_pWindow, GLFW_KEY_E) == GLFW_PRESS)
+			g_pCamera->Position.y -= g_pCamera->MovementSpeed * gDeltaTime;
+	}
+
+	// P/O projection mode switching
+	if (glfwGetKey(m_pWindow, GLFW_KEY_P) == GLFW_PRESS)
+		bOrthographicProjection = false;  // Switch to perspective
+	if (glfwGetKey(m_pWindow, GLFW_KEY_O) == GLFW_PRESS)
+		bOrthographicProjection = true;   // Switch to orthographic
 }
 
 /***********************************************************
@@ -226,8 +252,21 @@ void ViewManager::PrepareSceneView()
 	// get the current view matrix from the camera
 	view = g_pCamera->GetViewMatrix();
 
-	// define the current projection matrix
-	projection = glm::perspective(glm::radians(g_pCamera->Zoom), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
+	// define the current projection matrix based on projection mode
+	if (bOrthographicProjection)
+	{
+		// Orthographic projection
+		float aspect = (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT;
+		projection = glm::ortho(-gOrthoZoom * aspect, gOrthoZoom * aspect,
+		                       -gOrthoZoom, gOrthoZoom, 0.1f, 100.0f);
+	}
+	else
+	{
+		// Perspective projection
+		projection = glm::perspective(glm::radians(g_pCamera->Zoom),
+		                            (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT,
+		                            0.1f, 100.0f);
+	}
 
 	// if the shader manager object is valid
 	if (NULL != m_pShaderManager)
