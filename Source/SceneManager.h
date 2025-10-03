@@ -99,9 +99,15 @@ private:
 
 	// Coffee mug rendering methods
 	void RenderMugBody();
+	void RenderMugInterior();
+	void RenderCoffee();
 	void RenderMugHandle();
 	void RenderMugBase();
 	void RenderTablePlane();
+
+	// Texture and material setup methods
+	void LoadSceneTextures();
+	void DefineObjectMaterials();
 
 	// Mug positioning offset for proper alignment
 	float m_mugVerticalOffset;

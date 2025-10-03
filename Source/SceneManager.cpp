@@ -386,19 +386,123 @@ void SceneManager::PrepareScene()
 	// in the rendered 3D scene
 
 	m_basicMeshes->LoadPlaneMesh();
+	m_basicMeshes->LoadBoxMesh();  // For table with thickness
 
 	// Load our coffee mug components
 	m_basicMeshes->LoadCylinderMesh();  // Main mug body
 	m_basicMeshes->LoadTorusMesh();     // Handle and base rim
 
 	// Set vertical adjustment for mug components
-	m_mugVerticalOffset = -1.3f;
+	m_mugVerticalOffset = -1.25f;  // Adjusted so mug sits properly on base (only half of base visible)
+
+	// Load all scene textures
+	LoadSceneTextures();
+
+	// Define material properties for all objects
+	DefineObjectMaterials();
+}
+
+/***********************************************************
+ *  LoadSceneTextures()
+ *
+ *  This method is used for loading all texture images from
+ *  files and associating them with texture tags for easy
+ *  reference during rendering.
+ ***********************************************************/
+void SceneManager::LoadSceneTextures()
+{
+	bool bReturn = false;
+
+	// Load oak wood texture for table plane (tiled - complex technique)
+	bReturn = CreateGLTexture(
+		"../../Utilities/textures/oak-wood.jpg",
+		"oak");
+	if (!bReturn) {
+		std::cout << "Failed to load oak-wood.jpg texture" << std::endl;
+	}
+
+	// Load grey marble texture for mug body
+	bReturn = CreateGLTexture(
+		"../../Utilities/textures/grey-marble.jpg",
+		"marble");
+	if (!bReturn) {
+		std::cout << "Failed to load grey-marble.jpg texture" << std::endl;
+	}
+
+	// Load pale wall texture for mug handle
+	bReturn = CreateGLTexture(
+		"../../Utilities/textures/pale-wall.jpg",
+		"pale_wall");
+	if (!bReturn) {
+		std::cout << "Failed to load pale-wall.jpg texture" << std::endl;
+	}
+
+	// Load cracked cement texture for mug base
+	bReturn = CreateGLTexture(
+		"../../Utilities/textures/cracked-cement.jpg",
+		"cement");
+	if (!bReturn) {
+		std::cout << "Failed to load cracked-cement.jpg texture" << std::endl;
+	}
+
+	// Bind all loaded textures to OpenGL texture slots
+	BindGLTextures();
+}
+
+/***********************************************************
+ *  DefineObjectMaterials()
+ *
+ *  This method is used for defining material properties
+ *  for all objects in the scene. Materials control how
+ *  surfaces interact with light and texture colors.
+ ***********************************************************/
+void SceneManager::DefineObjectMaterials()
+{
+	// Wood material for table plane
+	OBJECT_MATERIAL woodMaterial;
+	woodMaterial.ambientColor = glm::vec3(0.4f, 0.3f, 0.2f);
+	woodMaterial.ambientStrength = 0.2f;
+	woodMaterial.diffuseColor = glm::vec3(0.6f, 0.4f, 0.2f);
+	woodMaterial.specularColor = glm::vec3(0.3f, 0.3f, 0.3f);
+	woodMaterial.shininess = 16.0;  // Low-medium for natural wood
+	woodMaterial.tag = "wood";
+	m_objectMaterials.push_back(woodMaterial);
+
+	// Marble material for mug body
+	OBJECT_MATERIAL marbleMaterial;
+	marbleMaterial.ambientColor = glm::vec3(0.3f, 0.3f, 0.3f);
+	marbleMaterial.ambientStrength = 0.3f;
+	marbleMaterial.diffuseColor = glm::vec3(0.6f, 0.6f, 0.6f);
+	marbleMaterial.specularColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	marbleMaterial.shininess = 64.0;  // High for polished marble
+	marbleMaterial.tag = "marble";
+	m_objectMaterials.push_back(marbleMaterial);
+
+	// Ceramic material for mug handle
+	OBJECT_MATERIAL ceramicMaterial;
+	ceramicMaterial.ambientColor = glm::vec3(0.4f, 0.4f, 0.4f);
+	ceramicMaterial.ambientStrength = 0.2f;
+	ceramicMaterial.diffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	ceramicMaterial.specularColor = glm::vec3(0.4f, 0.4f, 0.4f);
+	ceramicMaterial.shininess = 32.0;  // Medium for matte ceramic
+	ceramicMaterial.tag = "ceramic";
+	m_objectMaterials.push_back(ceramicMaterial);
+
+	// Concrete material for mug base
+	OBJECT_MATERIAL concreteMaterial;
+	concreteMaterial.ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
+	concreteMaterial.ambientStrength = 0.3f;
+	concreteMaterial.diffuseColor = glm::vec3(0.4f, 0.4f, 0.4f);
+	concreteMaterial.specularColor = glm::vec3(0.1f, 0.1f, 0.1f);
+	concreteMaterial.shininess = 8.0;  // Very low for rough concrete
+	concreteMaterial.tag = "concrete";
+	m_objectMaterials.push_back(concreteMaterial);
 }
 
 /***********************************************************
  *  RenderScene()
  *
- *  This method is used for rendering the 3D scene by 
+ *  This method is used for rendering the 3D scene by
  *  transforming and drawing the basic 3D shapes
  ***********************************************************/
 void SceneManager::RenderScene()
@@ -415,6 +519,8 @@ void SceneManager::RenderScene()
 
 	// Render the coffee mug components
 	RenderMugBody();
+	RenderMugInterior();
+	RenderCoffee();
 	RenderMugHandle();
 	RenderMugBase();
 }
@@ -422,35 +528,52 @@ void SceneManager::RenderScene()
 /***********************************************************
  *  RenderTablePlane()
  *
- *  Renders the table surface plane that objects sit on
+ *  Renders table with TILED oak texture
+ *
+ *  ARTISTIC CHOICE: Natural oak wood provides warm, organic
+ *  foundation for the scene. Tiling at 6x demonstrates the
+ *  complex texturing technique requirement while creating
+ *  realistic wood grain detail across the large 20x20 plane.
  ***********************************************************/
 void SceneManager::RenderTablePlane()
 {
-	// Set transformations for table plane
-	glm::vec3 scaleXYZ = glm::vec3(20.0f, 1.0f, 20.0f);  // 20x20 unit square plane
+	// Apply TILED oak wood texture (Complex Texturing Technique Requirement)
+	SetShaderTexture("oak");
+	SetTextureUVScale(6.0f, 6.0f);  // Tile 6x6 for wood grain detail
+	SetShaderMaterial("wood");
+
+	// Set transformations for table (using box for thickness)
+	glm::vec3 scaleXYZ = glm::vec3(20.0f, 0.5f, 20.0f);  // 20x20 surface with 0.5 unit thickness
 	float XrotationDegrees = 0.0f;  // Flat on ground
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.0f, 0.0f);  // Ground level
+	glm::vec3 positionXYZ = glm::vec3(0.0f, -0.25f, 0.0f);  // Lowered so top is at Y=0
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
-	// Set table surface color (white)
-	SetShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// Draw the plane
-	m_basicMeshes->DrawPlaneMesh();
+	// Draw the box (creates table with thickness)
+	m_basicMeshes->DrawBoxMesh();
 }
 
 /***********************************************************
  *  RenderMugBody()
  *
- *  Renders the main cylindrical body of the coffee mug
+ *  Renders mug body with grey marble texture
+ *
+ *  ARTISTIC CHOICE: Grey marble creates an elegant, premium
+ *  appearance. The natural veining adds visual interest while
+ *  maintaining the neutral color palette. Cylindrical mapping
+ *  on complex shape demonstrates advanced texture techniques.
  ***********************************************************/
 void SceneManager::RenderMugBody()
 {
+	// Apply grey marble texture to mug body (Part 1 of cohesive multi-textured object)
+	SetShaderTexture("marble");
+	SetTextureUVScale(1.0f, 1.0f);  // Standard 1:1 cylindrical mapping
+	SetShaderMaterial("marble");
+
 	// Set transformations for mug body
 	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
 	float XrotationDegrees = 0.0f;  // Upright cylinder
@@ -462,33 +585,96 @@ void SceneManager::RenderMugBody()
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
-	// Set mug body color (light gray/white)
-	SetShaderColor(0.9f, 0.9f, 0.9f, 1.0f);
-
-	// Draw the cylinder
-	m_basicMeshes->DrawCylinderMesh();
+	// Draw the cylinder without top cap (creates open mug)
+	m_basicMeshes->DrawCylinderMesh(false, true, true);  // No top, yes bottom, yes sides
 }
 
 /***********************************************************
- *  RenderMugHandle()
+ *  RenderMugInterior()
  *
- *  Renders the torus handle attached to the side of the mug
+ *  Renders interior of mug with pale wall texture
+ *
+ *  ARTISTIC CHOICE: Creates hollow mug interior visible from
+ *  above. Uses pale wall texture to contrast with marble
+ *  exterior and suggest a ceramic glazed interior surface.
  ***********************************************************/
-void SceneManager::RenderMugHandle()
+void SceneManager::RenderMugInterior()
 {
-	// Set transformations for mug handle
-	glm::vec3 scaleXYZ = glm::vec3(0.8f, 0.4f, 0.3f);  // Narrower width, taller height, moderate thickness
-	float XrotationDegrees = 0.0f;
+	// Apply pale wall texture to interior (creates light interior surface)
+	SetShaderTexture("pale_wall");
+	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetShaderMaterial("ceramic");
+
+	// Set transformations for mug interior (smaller diameter creates wall thickness)
+	glm::vec3 scaleXYZ = glm::vec3(1.08f, 2.7f, 1.08f);  // Smaller diameter than outer (1.2) creates visible wall thickness
+	float XrotationDegrees = 0.0f;  // Upright cylinder
 	float YrotationDegrees = 0.0f;
-	float ZrotationDegrees = 90.0f;  // Rotate around Z to make it vertical
-	glm::vec3 positionXYZ = glm::vec3(1.28f, 3.08f + m_mugVerticalOffset, 0.0f);  // Side of mug, middle height
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.35f + m_mugVerticalOffset, 0.0f);  // Lower position creates visible rim
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
-	// Set handle color (darker than mug body)
-	SetShaderColor(0.6f, 0.6f, 0.6f, 1.0f);
+	// Draw the interior cylinder (just sides, no caps - creates hollow cavity)
+	m_basicMeshes->DrawCylinderMesh(false, false, true);  // No top, no bottom, only sides
+}
+
+/***********************************************************
+ *  RenderCoffee()
+ *
+ *  Renders coffee liquid inside the mug
+ *
+ *  ARTISTIC CHOICE: Brown cylinder fills mug to 3/4 height
+ *  to simulate coffee. Top cap creates liquid surface.
+ ***********************************************************/
+void SceneManager::RenderCoffee()
+{
+	// Use brown color for coffee (no texture)
+	SetShaderColor(0.4f, 0.25f, 0.15f, 1.0f);  // Rich brown coffee color
+
+	// Set transformations for coffee (high enough to hide handle interior)
+	glm::vec3 scaleXYZ = glm::vec3(1.06f, 2.6f, 1.06f);  // Slightly smaller than interior (1.08), very full mug
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.3f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+
+	// Draw coffee cylinder with top cap (liquid surface)
+	m_basicMeshes->DrawCylinderMesh(true, true, true);  // Yes top, yes bottom, yes sides
+}
+
+/***********************************************************
+ *  RenderMugHandle()
+ *
+ *  Renders mug handle with pale wall texture
+ *
+ *  ARTISTIC CHOICE: Pale plaster/wall texture provides light
+ *  contrast against the darker marble body. This creates visual
+ *  separation and hierarchy, drawing attention to the handle
+ *  while maintaining cohesion through neutral tones.
+ ***********************************************************/
+void SceneManager::RenderMugHandle()
+{
+	// Apply pale wall texture to handle (Part 2 of cohesive multi-textured object)
+	SetShaderTexture("pale_wall");
+	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetShaderMaterial("ceramic");
+
+	// Set transformations for mug handle
+	glm::vec3 scaleXYZ = glm::vec3(0.8f, 0.4f, 0.3f);  // Narrower width, taller height, moderate thickness
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 90.0f;  // Rotate around Z to make it vertical
+	glm::vec3 positionXYZ = glm::vec3(1.28f, 2.88f + m_mugVerticalOffset, 0.0f);  // Side of mug, slightly lower
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
 
 	// Draw the torus
 	m_basicMeshes->DrawTorusMesh();
@@ -497,23 +683,30 @@ void SceneManager::RenderMugHandle()
 /***********************************************************
  *  RenderMugBase()
  *
- *  Renders the small torus rim at the bottom of the mug
+ *  Renders mug base rim with cracked cement texture
+ *
+ *  ARTISTIC CHOICE: Industrial cracked cement provides visual
+ *  weight and grounds the composition. The weathered, textured
+ *  appearance adds character and contrasts with the smooth
+ *  marble body, creating an eclectic artistic aesthetic.
  ***********************************************************/
 void SceneManager::RenderMugBase()
 {
+	// Apply cracked cement texture to base (Part 3 of cohesive multi-textured object)
+	SetShaderTexture("cement");
+	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetShaderMaterial("concrete");
+
 	// Set transformations for mug base rim
 	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);  // Smaller than mug body (1.2f), thicker
 	float XrotationDegrees = 90.0f;  // Flat on ground
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.175f, 0.0f);  // Just above plane
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.25f, 0.0f);  // Slightly higher above plane
 
 	// Apply transformations (Scale → Rotate → Translate)
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
-
-	// Set base color (darker gray than mug body for visual contrast)
-	SetShaderColor(0.75f, 0.75f, 0.75f, 1.0f);
 
 	// Draw the torus
 	m_basicMeshes->DrawTorusMesh();
