@@ -504,7 +504,7 @@ void SceneManager::DefineLights()
  ***********************************************************/
 void SceneManager::UploadLights()
 {
-	GLuint program = m_pShaderManager->GetShaderProgramID();
+	GLuint program = m_pShaderManager->m_programID;
 	glUseProgram(program);
 
 	// Enable lighting in the shader
@@ -519,12 +519,12 @@ void SceneManager::UploadLights()
 		// Negate and scale direction vector to place light far away
 		glm::vec3 position = -glm::normalize(light.direction) * 1e6f;
 
-		m_pShaderManager->setVec3Value((base + ".position").c_str(), position);
-		m_pShaderManager->setVec3Value((base + ".ambientColor").c_str(), light.ambient);
-		m_pShaderManager->setVec3Value((base + ".diffuseColor").c_str(), light.diffuse);
-		m_pShaderManager->setVec3Value((base + ".specularColor").c_str(), light.specular);
-		m_pShaderManager->setFloatValue((base + ".focalStrength").c_str(), light.focalStrength);
-		m_pShaderManager->setFloatValue((base + ".specularIntensity").c_str(), light.specularIntensity);
+		m_pShaderManager->setVec3Value(base + ".position", position);
+		m_pShaderManager->setVec3Value(base + ".ambientColor", light.ambient);
+		m_pShaderManager->setVec3Value(base + ".diffuseColor", light.diffuse);
+		m_pShaderManager->setVec3Value(base + ".specularColor", light.specular);
+		m_pShaderManager->setFloatValue(base + ".focalStrength", light.focalStrength);
+		m_pShaderManager->setFloatValue(base + ".specularIntensity", light.specularIntensity);
 	};
 
 	// Upload all lights using the helper
