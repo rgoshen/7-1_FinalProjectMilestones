@@ -745,6 +745,8 @@ void SceneManager::RenderCoffee()
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
+	// Apply coffee material and render as a flat, non-textured surface (color path)
+    // This avoids inheriting any previous object’s texture/UV state.
 	m_pShaderManager->setIntValue("bUseTexture", false); // Coffee: flat color, no texture
 	SetShaderMaterial("coffee");
 	SetShaderColor(0.32f, 0.20f, 0.10f, 1.0f); // coffee-brown albedo
