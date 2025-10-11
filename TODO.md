@@ -14,16 +14,18 @@
 **Goal**: Upload four lights every frame using existing shader uniforms and keep lighting on.
 
 ### Tasks:
-- [ ] Add `DefineLightsAndUpload()` declaration to SceneManager.h
-- [ ] Implement `DefineLightsAndUpload()` in SceneManager.cpp with:
-  - Lambda helper `setLight` function
-  - Set `bUseLighting` to true
+- [x] Add `DefineLights()` and `UploadLights()` declarations to SceneManager.h
+- [x] Implement `DefineLights()` in SceneManager.cpp with:
   - Light 0 – Sun (warm) e=80°, a=45° → (0.123, 0.985, 0.123)
   - Light 1 – Sky (cool, opposite)
   - Light 2 – Wall bounce (warm side)
   - Light 3 – Back fill (neutral)
+- [x] Implement `UploadLights()` in SceneManager.cpp with:
+  - Lambda helper `setLight` function
+  - Set `bUseLighting` to true
   - Position calculation: `-glm::normalize(dirUnit) * 1e6f`
-- [ ] Call `DefineLightsAndUpload()` at top of `RenderScene()`
+- [x] Call `DefineLights()` in `PrepareScene()`
+- [x] Call `UploadLights()` at top of `RenderScene()`
 - [ ] **COMMIT** after Phase 1 complete
 
 ---

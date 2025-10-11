@@ -400,6 +400,9 @@ void SceneManager::PrepareScene()
 
 	// Define material properties for all objects
 	DefineObjectMaterials();
+
+	// Define lighting for the scene
+	DefineLights();
 }
 
 /***********************************************************
@@ -447,6 +450,88 @@ void SceneManager::LoadSceneTextures()
 
 	// Bind all loaded textures to OpenGL texture slots
 	BindGLTextures();
+}
+
+/***********************************************************
+ *  DefineLights()
+ *
+ *  This method defines four directional lights that simulate
+ *  natural sunlight entering through a high window (80° elevation,
+ *  45° azimuth) with soft ambient fill from the environment.
+ ***********************************************************/
+void SceneManager::DefineLights()
+{
+	// Light 0 – Sunlight (warm, primary)
+	// Direction: 80° elevation, 45° azimuth → (0.123, 0.985, 0.123)
+	m_dirLights[0].direction = glm::normalize(glm::vec3(0.123f, 0.985f, 0.123f));
+	m_dirLights[0].ambient = glm::vec3(0.10f, 0.10f, 0.12f);
+	m_dirLights[0].diffuse = glm::vec3(1.00f, 0.98f, 0.92f);
+	m_dirLights[0].specular = glm::vec3(1.00f, 1.00f, 1.00f);
+	m_dirLights[0].focalStrength = 32.0f;
+	m_dirLights[0].specularIntensity = 1.0f;
+
+	// Light 1 – Sky Fill (cool, opposite direction)
+	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
+	m_dirLights[1].ambient = glm::vec3(0.12f, 0.13f, 0.16f);
+	m_dirLights[1].diffuse = glm::vec3(0.35f, 0.40f, 0.50f);
+	m_dirLights[1].specular = glm::vec3(0.0f);
+	m_dirLights[1].focalStrength = 16.0f;
+	m_dirLights[1].specularIntensity = 0.10f;
+
+	// Light 2 – Wall Bounce (warm, low side fill)
+	m_dirLights[2].direction = glm::normalize(glm::vec3(-0.612f, 0.500f, -0.612f));
+	m_dirLights[2].ambient = glm::vec3(0.05f);
+	m_dirLights[2].diffuse = glm::vec3(0.20f, 0.17f, 0.15f);
+	m_dirLights[2].specular = glm::vec3(0.05f);
+	m_dirLights[2].focalStrength = 16.0f;
+	m_dirLights[2].specularIntensity = 0.20f;
+
+	// Light 3 – Back Fill (neutral, subtle)
+	m_dirLights[3].direction = glm::normalize(glm::vec3(-0.683f, 0.259f, 0.683f));
+	m_dirLights[3].ambient = glm::vec3(0.04f);
+	m_dirLights[3].diffuse = glm::vec3(0.12f);
+	m_dirLights[3].specular = glm::vec3(0.0f);
+	m_dirLights[3].focalStrength = 8.0f;
+	m_dirLights[3].specularIntensity = 0.05f;
+}
+
+/***********************************************************
+ *  UploadLights()
+ *
+ *  This method uploads the directional light data to the
+ *  active shader program. Called once per frame before
+ *  drawing the scene.
+ ***********************************************************/
+void SceneManager::UploadLights()
+{
+	GLuint program = m_pShaderManager->GetShaderProgramID();
+	glUseProgram(program);
+
+	// Enable lighting in the shader
+	m_pShaderManager->setIntValue("bUseLighting", true);
+
+	// Lambda helper to upload a single light's data to the shader
+	auto setLight = [&](int index, const DIRECTIONAL_LIGHT& light)
+	{
+		std::string base = "lightSources[" + std::to_string(index) + "]";
+
+		// Convert directional light to distant point light position
+		// Negate and scale direction vector to place light far away
+		glm::vec3 position = -glm::normalize(light.direction) * 1e6f;
+
+		m_pShaderManager->setVec3Value((base + ".position").c_str(), position);
+		m_pShaderManager->setVec3Value((base + ".ambientColor").c_str(), light.ambient);
+		m_pShaderManager->setVec3Value((base + ".diffuseColor").c_str(), light.diffuse);
+		m_pShaderManager->setVec3Value((base + ".specularColor").c_str(), light.specular);
+		m_pShaderManager->setFloatValue((base + ".focalStrength").c_str(), light.focalStrength);
+		m_pShaderManager->setFloatValue((base + ".specularIntensity").c_str(), light.specularIntensity);
+	};
+
+	// Upload all lights using the helper
+	for (int i = 0; i < NUM_DIR_LIGHTS; ++i)
+	{
+		setLight(i, m_dirLights[i]);
+	}
 }
 
 /***********************************************************
@@ -507,6 +592,9 @@ void SceneManager::DefineObjectMaterials()
  ***********************************************************/
 void SceneManager::RenderScene()
 {
+	// Upload lighting data to shader
+	UploadLights();
+
 	// declare the variables for the transformations
 	glm::vec3 scaleXYZ;
 	float XrotationDegrees = 0.0f;
