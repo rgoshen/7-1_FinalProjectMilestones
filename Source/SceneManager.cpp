@@ -466,15 +466,15 @@ void SceneManager::DefineLights()
 	m_dirLights[0].direction = glm::normalize(glm::vec3(0.123f, 0.985f, 0.123f));
 	m_dirLights[0].ambient = glm::vec3(0.14f, 0.14f, 0.16f);
 	m_dirLights[0].diffuse = glm::vec3(0.85f, 0.82f, 0.78f);
-	m_dirLights[0].specular = glm::vec3(0.30f);     // much lower color
-	m_dirLights[0].focalStrength = 24.0f;        // slightly broader highlight
-	m_dirLights[0].specularIntensity = 0.18f;    // Phase 3C - reduced to prevent mug washout
+	m_dirLights[0].specular = glm::vec3(0.30f);
+	m_dirLights[0].focalStrength = 24.0f;
+	m_dirLights[0].specularIntensity = 0.18f;
 
 	// Light 1 – Sky Fill (cool, opposite direction)
 	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
 	m_dirLights[1].ambient = glm::vec3(0.02f, 0.02f, 0.03f);
-	m_dirLights[1].diffuse = glm::vec3(0.22f, 0.26f, 0.34f); // down from 0.35–0.50
-	m_dirLights[1].specular = glm::vec3(0.0f);                // no specular from fill
+	m_dirLights[1].diffuse = glm::vec3(0.22f, 0.26f, 0.34f);
+	m_dirLights[1].specular = glm::vec3(0.0f);
 	m_dirLights[1].focalStrength = 12.0f;
 	m_dirLights[1].specularIntensity = 0.0f;
 
@@ -558,7 +558,7 @@ void SceneManager::DefineObjectMaterials()
 	woodMaterial.tag = "wood";
 	m_objectMaterials.push_back(woodMaterial);
 
-	// Marble material for mug body (Phase 3C - reduced to reveal marble detail)
+	// Marble material for mug body
 	OBJECT_MATERIAL marbleMaterial;
 	marbleMaterial.ambientColor = glm::vec3(0.22f);
 	marbleMaterial.ambientStrength = 0.22f;
@@ -636,11 +636,11 @@ void SceneManager::RenderTablePlane()
 	SetShaderMaterial("wood");
 
 	// Set transformations for table (using box for thickness)
-	glm::vec3 scaleXYZ = glm::vec3(20.0f, 0.5f, 20.0f);  // 20x20 surface with 0.5 unit thickness
-	float XrotationDegrees = 0.0f;  // Flat on ground
+	glm::vec3 scaleXYZ = glm::vec3(20.0f, 0.5f, 20.0f);
+	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, -0.25f, 0.0f);  // Lowered so top is at Y=0
+	glm::vec3 positionXYZ = glm::vec3(0.0f, -0.25f, 0.0f);
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -662,9 +662,9 @@ void SceneManager::RenderTablePlane()
  ***********************************************************/
 void SceneManager::RenderMugBody()
 {
-	// Apply grey marble texture to mug body (Part 1 of cohesive multi-textured object)
+	// Apply grey marble texture to mug body
 	SetShaderTexture("marble");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard 1:1 cylindrical mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("marble");
 
 	// Set transformations for mug body
@@ -695,7 +695,7 @@ void SceneManager::RenderMugInterior()
 {
 	// Apply pale wall texture to interior (creates light interior surface)
 	SetShaderTexture("pale_wall");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("ceramic");
 
 	// Set transformations for mug interior (smaller diameter creates wall thickness)
@@ -753,9 +753,9 @@ void SceneManager::RenderCoffee()
  ***********************************************************/
 void SceneManager::RenderMugHandle()
 {
-	// Apply pale wall texture to handle (Part 2 of cohesive multi-textured object)
+	// Apply pale wall texture to handle
 	SetShaderTexture("pale_wall");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("ceramic");
 
 	// Set transformations for mug handle
@@ -785,17 +785,17 @@ void SceneManager::RenderMugHandle()
  ***********************************************************/
 void SceneManager::RenderMugBase()
 {
-	// Apply cracked cement texture to base (Part 3 of cohesive multi-textured object)
+	// Apply cracked cement texture to base
 	SetShaderTexture("cement");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("concrete");
 
 	// Set transformations for mug base rim
-	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);  // Smaller than mug body (1.2f), thicker
-	float XrotationDegrees = 90.0f;  // Flat on ground
+	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);
+	float XrotationDegrees = 90.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.25f, 0.0f);  // Slightly higher above plane
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.25f, 0.0f);
 
 	// Apply transformations (Scale → Rotate → Translate)
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
