@@ -2,9 +2,9 @@
 
 ## Phase 0: Guardrails (once)
 - [x] Create a new branch: feat/m5-lighting (already done by user)
-- [ ] Do not rename or remove any existing uniforms or structs
-- [ ] Do not rewrite fragmentShader.glsl
-- [ ] Only touch:
+- [x] Do not rename or remove any existing uniforms or structs
+- [x] Do not rewrite fragmentShader.glsl
+- [x] Only touch:
   - vertexShader.glsl (one small fix)
   - SceneManager.h/.cpp (add light uploader + call site)
 
