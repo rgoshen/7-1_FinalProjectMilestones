@@ -40,7 +40,7 @@
   fragmentVertexNormal = normalize(normalMatrix * inVertexNormal);
   ```
 - [x] Keep all existing in/out variable names unchanged
-- [ ] **COMMIT** after Phase 2 complete
+- [x] **COMMIT** after Phase 2 complete (file outside repo)
 
 ---
 
