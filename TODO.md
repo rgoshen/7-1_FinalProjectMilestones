@@ -48,17 +48,17 @@
 **Goal**: Verify shader meets expectations (NO EDITS REQUIRED)
 
 ### Verification Checklist:
-- [ ] Uses `uniform bool bUseLighting;`
-- [ ] Uses `uniform bool bUseTexture;`
-- [ ] Uses `uniform sampler2D objectTexture;`
-- [ ] Uses `uniform vec3 viewPosition;`
-- [ ] Uses `uniform vec2 UVscale;`
-- [ ] Has `struct LightSource` with correct fields
-- [ ] Has `#define TOTAL_LIGHTS 4`
-- [ ] Has `uniform LightSource lightSources[TOTAL_LIGHTS];`
-- [ ] Sums all 4 lights in a loop
-- [ ] Uses `fragmentPosition`, `fragmentVertexNormal`, `fragmentTextureCoordinate`
-- [ ] Attenuation effectively disabled or not used (distant positions emulate directional)
+- [x] Uses `uniform bool bUseLighting;`
+- [x] Uses `uniform bool bUseTexture;`
+- [x] Uses `uniform sampler2D objectTexture;`
+- [x] Uses `uniform vec3 viewPosition;`
+- [x] Uses `uniform vec2 UVscale;`
+- [x] Has `struct LightSource` with correct fields
+- [x] Has `#define TOTAL_LIGHTS 4`
+- [x] Has `uniform LightSource lightSources[TOTAL_LIGHTS];`
+- [x] Sums all 4 lights in a loop
+- [x] Uses `fragmentPosition`, `fragmentVertexNormal`, `fragmentTextureCoordinate`
+- [x] Attenuation effectively disabled or not used (distant positions emulate directional)
 
 ---
 
