@@ -562,8 +562,8 @@ void SceneManager::DefineObjectMaterials()
 	OBJECT_MATERIAL marbleMaterial;
 	marbleMaterial.ambientColor = glm::vec3(0.22f);
 	marbleMaterial.ambientStrength = 0.22f;
-	marbleMaterial.diffuseColor = glm::vec3(0.42f);
-	marbleMaterial.specularColor = glm::vec3(0.02f);
+	marbleMaterial.diffuseColor = glm::vec3(0.36f);
+	marbleMaterial.specularColor = glm::vec3(0.01f);
 	marbleMaterial.shininess = 4.0f;
 	marbleMaterial.tag = "marble";
 	m_objectMaterials.push_back(marbleMaterial);
@@ -587,6 +587,16 @@ void SceneManager::DefineObjectMaterials()
 	concreteMaterial.shininess = 6.0f;
 	concreteMaterial.tag = "concrete";
 	m_objectMaterials.push_back(concreteMaterial);
+
+	// Coffee (liquid)
+	OBJECT_MATERIAL coffeeMaterial;
+	coffeeMaterial.ambientColor = glm::vec3(0.24f, 0.15f, 0.08f);
+	coffeeMaterial.ambientStrength = 0.25f;
+	coffeeMaterial.diffuseColor = glm::vec3(0.32f, 0.20f, 0.10f);
+	coffeeMaterial.specularColor = glm::vec3(0.08f, 0.06f, 0.04f);
+	coffeeMaterial.shininess = 5.0f;
+	coffeeMaterial.tag = "coffee";
+	m_objectMaterials.push_back(coffeeMaterial);
 }
 
 /***********************************************************
@@ -724,21 +734,28 @@ void SceneManager::RenderMugInterior()
 void SceneManager::RenderCoffee()
 {
 	// Use brown color for coffee (no texture)
-	SetShaderColor(0.4f, 0.25f, 0.15f, 1.0f);  // Rich brown coffee color
+	SetShaderMaterial("coffee");
 
 	// Set transformations for coffee (high enough to hide handle interior)
 	glm::vec3 scaleXYZ = glm::vec3(1.06f, 2.6f, 1.06f);  // Slightly smaller than interior (1.08), very full mug
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.3f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.46f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
+	m_pShaderManager->setIntValue("bUseTexture", false); // Coffee: flat color, no texture
+	SetShaderMaterial("coffee");
+	SetShaderColor(0.32f, 0.20f, 0.10f, 1.0f); // coffee-brown albedo
+
 	// Draw coffee cylinder with top cap (liquid surface)
-	m_basicMeshes->DrawCylinderMesh(true, true, true);  // Yes top, yes bottom, yes sides
+	m_basicMeshes->DrawCylinderMesh(true, false, true);  // top = true, bottom = false, sides = true
+
+	// Restore for subsequent textured draws
+	m_pShaderManager->setIntValue("bUseTexture", true);
 }
 
 /***********************************************************
