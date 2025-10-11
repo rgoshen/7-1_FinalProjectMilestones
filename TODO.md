@@ -26,7 +26,7 @@
   - Position calculation: `-glm::normalize(dirUnit) * 1e6f`
 - [x] Call `DefineLights()` in `PrepareScene()`
 - [x] Call `UploadLights()` at top of `RenderScene()`
-- [ ] **COMMIT** after Phase 1 complete
+- [x] **COMMIT** after Phase 1 complete
 
 ---
 
@@ -34,12 +34,12 @@
 **Goal**: Fix normals for correct lighting on rotated/scaled geometry.
 
 ### Tasks:
-- [ ] Replace `fragmentVertexNormal = inVertexNormal;` with:
+- [x] Replace `fragmentVertexNormal = inVertexNormal;` with:
   ```glsl
   mat3 normalMatrix = mat3(transpose(inverse(mat3(model))));
   fragmentVertexNormal = normalize(normalMatrix * inVertexNormal);
   ```
-- [ ] Keep all existing in/out variable names unchanged
+- [x] Keep all existing in/out variable names unchanged
 - [ ] **COMMIT** after Phase 2 complete
 
 ---
