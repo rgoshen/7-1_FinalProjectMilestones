@@ -319,11 +319,19 @@ void SceneManager::SetShaderTexture(
 {
 	if (NULL != m_pShaderManager)
 	{
-		m_pShaderManager->setIntValue(g_UseTextureName, true);
+		int textureSlot = FindTextureSlot(textureTag);
 
-		int textureID = -1;
-		textureID = FindTextureSlot(textureTag);
-		m_pShaderManager->setSampler2DValue(g_TextureValueName, textureID);
+		if (textureSlot >= 0)
+		{
+			m_pShaderManager->setIntValue(g_UseTextureName, true);
+			m_pShaderManager->setSampler2DValue(g_TextureValueName, textureSlot);
+		}
+		else
+		{
+			// Texture tag not found: use solid color path to avoid sampling garbage.
+			m_pShaderManager->setIntValue(g_UseTextureName, false);
+			// (No SetShaderColor here; caller decides the fallback color.)
+		}
 	}
 }
 
