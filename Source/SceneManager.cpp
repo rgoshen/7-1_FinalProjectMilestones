@@ -237,7 +237,7 @@ bool SceneManager::FindMaterial(std::string tag, OBJECT_MATERIAL& material)
 		}
 	}
 
-	return(true);
+	return bFound;
 }
 
 /***********************************************************
