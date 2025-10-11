@@ -767,6 +767,7 @@ void SceneManager::RenderCoffee()
 
 	// Restore for subsequent textured draws
 	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);  // reset UVs after non-textured draw
 }
 
 /***********************************************************
