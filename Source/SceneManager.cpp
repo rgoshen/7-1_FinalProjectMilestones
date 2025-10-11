@@ -733,8 +733,6 @@ void SceneManager::RenderMugInterior()
  ***********************************************************/
 void SceneManager::RenderCoffee()
 {
-	// Use brown color for coffee (no texture)
-	SetShaderMaterial("coffee");
 
 	// Set transformations for coffee (high enough to hide handle interior)
 	glm::vec3 scaleXYZ = glm::vec3(1.06f, 2.6f, 1.06f);  // Slightly smaller than interior (1.08), very full mug
