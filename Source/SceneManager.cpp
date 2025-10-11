@@ -464,35 +464,35 @@ void SceneManager::DefineLights()
 	// Light 0 – Sunlight (warm, primary)
 	// Direction: 80° elevation, 45° azimuth → (0.123, 0.985, 0.123)
 	m_dirLights[0].direction = glm::normalize(glm::vec3(0.123f, 0.985f, 0.123f));
-	m_dirLights[0].ambient = glm::vec3(0.10f, 0.10f, 0.12f);
-	m_dirLights[0].diffuse = glm::vec3(1.00f, 0.98f, 0.92f);
-	m_dirLights[0].specular = glm::vec3(1.00f, 1.00f, 1.00f);
-	m_dirLights[0].focalStrength = 32.0f;
-	m_dirLights[0].specularIntensity = 1.0f;
+	m_dirLights[0].ambient = glm::vec3(0.14f, 0.14f, 0.16f);
+	m_dirLights[0].diffuse = glm::vec3(0.85f, 0.82f, 0.78f);
+	m_dirLights[0].specular = glm::vec3(0.30f);     // much lower color
+	m_dirLights[0].focalStrength = 24.0f;        // slightly broader highlight
+	m_dirLights[0].specularIntensity = 0.18f;    // Phase 3C - reduced to prevent mug washout
 
 	// Light 1 – Sky Fill (cool, opposite direction)
 	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
-	m_dirLights[1].ambient = glm::vec3(0.12f, 0.13f, 0.16f);
-	m_dirLights[1].diffuse = glm::vec3(0.35f, 0.40f, 0.50f);
-	m_dirLights[1].specular = glm::vec3(0.0f);
-	m_dirLights[1].focalStrength = 16.0f;
-	m_dirLights[1].specularIntensity = 0.10f;
+	m_dirLights[1].ambient = glm::vec3(0.02f, 0.02f, 0.03f);
+	m_dirLights[1].diffuse = glm::vec3(0.22f, 0.26f, 0.34f); // down from 0.35–0.50
+	m_dirLights[1].specular = glm::vec3(0.0f);                // no specular from fill
+	m_dirLights[1].focalStrength = 12.0f;
+	m_dirLights[1].specularIntensity = 0.0f;
 
 	// Light 2 – Wall Bounce (warm, low side fill)
 	m_dirLights[2].direction = glm::normalize(glm::vec3(-0.612f, 0.500f, -0.612f));
-	m_dirLights[2].ambient = glm::vec3(0.05f);
-	m_dirLights[2].diffuse = glm::vec3(0.20f, 0.17f, 0.15f);
-	m_dirLights[2].specular = glm::vec3(0.05f);
-	m_dirLights[2].focalStrength = 16.0f;
-	m_dirLights[2].specularIntensity = 0.20f;
+	m_dirLights[2].ambient = glm::vec3(0.01f);
+	m_dirLights[2].diffuse = glm::vec3(0.14f, 0.12f, 0.10f); // lower
+	m_dirLights[2].specular = glm::vec3(0.0f);
+	m_dirLights[2].focalStrength = 10.0f;
+	m_dirLights[2].specularIntensity = 0.0f;
 
 	// Light 3 – Back Fill (neutral, subtle)
 	m_dirLights[3].direction = glm::normalize(glm::vec3(-0.683f, 0.259f, 0.683f));
-	m_dirLights[3].ambient = glm::vec3(0.04f);
-	m_dirLights[3].diffuse = glm::vec3(0.12f);
+	m_dirLights[3].ambient = glm::vec3(0.01f);
+	m_dirLights[3].diffuse = glm::vec3(0.08f); // lower
 	m_dirLights[3].specular = glm::vec3(0.0f);
 	m_dirLights[3].focalStrength = 8.0f;
-	m_dirLights[3].specularIntensity = 0.05f;
+	m_dirLights[3].specularIntensity = 0.0f;
 }
 
 /***********************************************************
@@ -506,32 +506,37 @@ void SceneManager::UploadLights()
 {
 	GLuint program = m_pShaderManager->m_programID;
 	glUseProgram(program);
-
-	// Enable lighting in the shader
 	m_pShaderManager->setIntValue("bUseLighting", true);
 
-	// Lambda helper to upload a single light's data to the shader
 	auto setLight = [&](int index, const DIRECTIONAL_LIGHT& light)
-	{
-		std::string base = "lightSources[" + std::to_string(index) + "]";
+		{
+			std::string base = "lightSources[" + std::to_string(index) + "]";
+			glm::vec3 position = glm::normalize(light.direction) * 1e6f; // keep the “distant point” approach
+			m_pShaderManager->setVec3Value(base + ".position", position);
+			m_pShaderManager->setVec3Value(base + ".ambientColor", light.ambient);
+			m_pShaderManager->setVec3Value(base + ".diffuseColor", light.diffuse);
+			m_pShaderManager->setVec3Value(base + ".specularColor", light.specular);
+			m_pShaderManager->setFloatValue(base + ".focalStrength", light.focalStrength);
+			m_pShaderManager->setFloatValue(base + ".specularIntensity", light.specularIntensity);
+		};
 
-		// Convert directional light to distant point light position
-		// Negate and scale direction vector to place light far away
-		glm::vec3 position = -glm::normalize(light.direction) * 1e6f;
+	const bool SINGLE_LIGHT_DEBUG = false; // set true to upload only the sun
 
-		m_pShaderManager->setVec3Value(base + ".position", position);
-		m_pShaderManager->setVec3Value(base + ".ambientColor", light.ambient);
-		m_pShaderManager->setVec3Value(base + ".diffuseColor", light.diffuse);
-		m_pShaderManager->setVec3Value(base + ".specularColor", light.specular);
-		m_pShaderManager->setFloatValue(base + ".focalStrength", light.focalStrength);
-		m_pShaderManager->setFloatValue(base + ".specularIntensity", light.specularIntensity);
-	};
-
-	// Upload all lights using the helper
-	for (int i = 0; i < NUM_DIR_LIGHTS; ++i)
-	{
-		setLight(i, m_dirLights[i]);
+	if (SINGLE_LIGHT_DEBUG) {
+		setLight(0, m_dirLights[0]);
+		// zero out others
+		for (int i = 1; i < NUM_DIR_LIGHTS; ++i) {
+			DIRECTIONAL_LIGHT off{};
+			off.direction = glm::vec3(0, 1, 0);
+			off.ambient = off.diffuse = off.specular = glm::vec3(0);
+			off.focalStrength = 1.0f;
+			off.specularIntensity = 0.0f;
+			setLight(i, off);
+		}
+		return;
 	}
+
+	for (int i = 0; i < NUM_DIR_LIGHTS; ++i) setLight(i, m_dirLights[i]);
 }
 
 /***********************************************************
@@ -545,41 +550,41 @@ void SceneManager::DefineObjectMaterials()
 {
 	// Wood material for table plane
 	OBJECT_MATERIAL woodMaterial;
-	woodMaterial.ambientColor = glm::vec3(0.4f, 0.3f, 0.2f);
-	woodMaterial.ambientStrength = 0.2f;
-	woodMaterial.diffuseColor = glm::vec3(0.6f, 0.4f, 0.2f);
-	woodMaterial.specularColor = glm::vec3(0.3f, 0.3f, 0.3f);
-	woodMaterial.shininess = 16.0;  // Low-medium for natural wood
+	woodMaterial.ambientColor = glm::vec3(0.35f, 0.28f, 0.20f);
+	woodMaterial.ambientStrength = 0.20f;
+	woodMaterial.diffuseColor = glm::vec3(0.55f, 0.40f, 0.22f);
+	woodMaterial.specularColor = glm::vec3(0.03f);
+	woodMaterial.shininess = 8.0f;
 	woodMaterial.tag = "wood";
 	m_objectMaterials.push_back(woodMaterial);
 
-	// Marble material for mug body
+	// Marble material for mug body (Phase 3C - reduced to reveal marble detail)
 	OBJECT_MATERIAL marbleMaterial;
-	marbleMaterial.ambientColor = glm::vec3(0.3f, 0.3f, 0.3f);
-	marbleMaterial.ambientStrength = 0.3f;
-	marbleMaterial.diffuseColor = glm::vec3(0.6f, 0.6f, 0.6f);
-	marbleMaterial.specularColor = glm::vec3(0.8f, 0.8f, 0.8f);
-	marbleMaterial.shininess = 64.0;  // High for polished marble
+	marbleMaterial.ambientColor = glm::vec3(0.22f);
+	marbleMaterial.ambientStrength = 0.22f;
+	marbleMaterial.diffuseColor = glm::vec3(0.42f);
+	marbleMaterial.specularColor = glm::vec3(0.02f);
+	marbleMaterial.shininess = 4.0f;
 	marbleMaterial.tag = "marble";
 	m_objectMaterials.push_back(marbleMaterial);
 
 	// Ceramic material for mug handle
 	OBJECT_MATERIAL ceramicMaterial;
-	ceramicMaterial.ambientColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	ceramicMaterial.ambientStrength = 0.2f;
-	ceramicMaterial.diffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);
-	ceramicMaterial.specularColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	ceramicMaterial.shininess = 32.0;  // Medium for matte ceramic
+	ceramicMaterial.ambientColor = glm::vec3(0.40f);
+	ceramicMaterial.ambientStrength = 0.20f;
+	ceramicMaterial.diffuseColor = glm::vec3(0.80f);
+	ceramicMaterial.specularColor = glm::vec3(0.10f);
+	ceramicMaterial.shininess = 12.0f;
 	ceramicMaterial.tag = "ceramic";
 	m_objectMaterials.push_back(ceramicMaterial);
 
 	// Concrete material for mug base
 	OBJECT_MATERIAL concreteMaterial;
-	concreteMaterial.ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
-	concreteMaterial.ambientStrength = 0.3f;
-	concreteMaterial.diffuseColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	concreteMaterial.specularColor = glm::vec3(0.1f, 0.1f, 0.1f);
-	concreteMaterial.shininess = 8.0;  // Very low for rough concrete
+	concreteMaterial.ambientColor = glm::vec3(0.20f);
+	concreteMaterial.ambientStrength = 0.30f;
+	concreteMaterial.diffuseColor = glm::vec3(0.40f);
+	concreteMaterial.specularColor = glm::vec3(0.04f);
+	concreteMaterial.shininess = 6.0f;
 	concreteMaterial.tag = "concrete";
 	m_objectMaterials.push_back(concreteMaterial);
 }
