@@ -473,13 +473,13 @@ void SceneManager::LoadSceneTextures()
 void SceneManager::DefineLights()
 {
 	// Light 0 – Sunlight (warm, primary)
-	// Direction: 80° elevation, 45° azimuth → (0.123, 0.985, 0.123)
-	m_dirLights[0].direction = glm::normalize(glm::vec3(0.123f, 0.985f, 0.123f));
-	m_dirLights[0].ambient = glm::vec3(0.14f, 0.14f, 0.16f);
-	m_dirLights[0].diffuse = glm::vec3(0.85f, 0.82f, 0.78f);
-	m_dirLights[0].specular = glm::vec3(0.30f);
+	// Direction: 65° elevation, 45° azimuth
+	m_dirLights[0].direction = glm::normalize(glm::vec3(0.28f, 0.80f, 0.12f));
+	m_dirLights[0].ambient = glm::vec3(0.12f, 0.12f, 0.13f);
+	m_dirLights[0].diffuse = glm::vec3(0.95f, 0.90f, 0.83f);
+	m_dirLights[0].specular = glm::vec3(0.22f);
 	m_dirLights[0].focalStrength = 24.0f;
-	m_dirLights[0].specularIntensity = 0.18f;
+	m_dirLights[0].specularIntensity = 0.15f;
 
 	// Light 1 – Sky Fill (cool, opposite direction)
 	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
@@ -531,22 +531,6 @@ void SceneManager::UploadLights()
 			m_pShaderManager->setFloatValue(base + ".specularIntensity", light.specularIntensity);
 		};
 
-	const bool SINGLE_LIGHT_DEBUG = false; // set true to upload only the sun
-
-	if (SINGLE_LIGHT_DEBUG) {
-		setLight(0, m_dirLights[0]);
-		// zero out others
-		for (int i = 1; i < NUM_DIR_LIGHTS; ++i) {
-			DIRECTIONAL_LIGHT off{};
-			off.direction = glm::vec3(0, 1, 0);
-			off.ambient = off.diffuse = off.specular = glm::vec3(0);
-			off.focalStrength = 1.0f;
-			off.specularIntensity = 0.0f;
-			setLight(i, off);
-		}
-		return;
-	}
-
 	for (int i = 0; i < NUM_DIR_LIGHTS; ++i) setLight(i, m_dirLights[i]);
 }
 
@@ -581,11 +565,11 @@ void SceneManager::DefineObjectMaterials()
 
 	// Ceramic material for mug handle
 	OBJECT_MATERIAL ceramicMaterial;
-	ceramicMaterial.ambientColor = glm::vec3(0.40f);
-	ceramicMaterial.ambientStrength = 0.20f;
-	ceramicMaterial.diffuseColor = glm::vec3(0.80f);
-	ceramicMaterial.specularColor = glm::vec3(0.10f);
-	ceramicMaterial.shininess = 12.0f;
+	ceramicMaterial.ambientColor = glm::vec3(0.34f);
+	ceramicMaterial.ambientStrength = 0.16f;
+	ceramicMaterial.diffuseColor = glm::vec3(0.60f);
+	ceramicMaterial.specularColor = glm::vec3(0.02f);
+	ceramicMaterial.shininess = 4.0f;
 	ceramicMaterial.tag = "ceramic";
 	m_objectMaterials.push_back(ceramicMaterial);
 
@@ -685,13 +669,13 @@ void SceneManager::RenderMugBody()
 {
 	// Apply grey marble texture to mug body
 	SetShaderTexture("marble");
-	SetTextureUVScale(1.0f, 1.0f);
+	SetTextureUVScale(2.0f, 1.0f);
 	SetShaderMaterial("marble");
 
 	// Set transformations for mug body
 	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
 	float XrotationDegrees = 0.0f;  // Upright cylinder
-	float YrotationDegrees = 0.0f;
+	float YrotationDegrees = 25.0f; // rotate marble seam away from handle/camera
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.5f + m_mugVerticalOffset, 0.0f);  // Sitting on plane
 
@@ -722,7 +706,7 @@ void SceneManager::RenderMugInterior()
 	// Set transformations for mug interior (smaller diameter creates wall thickness)
 	glm::vec3 scaleXYZ = glm::vec3(1.08f, 2.7f, 1.08f);  // Smaller diameter than outer (1.2) creates visible wall thickness
 	float XrotationDegrees = 0.0f;  // Upright cylinder
-	float YrotationDegrees = 0.0f;
+	float YrotationDegrees = 25.0f;  // keep interior seam aligned with outer body
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.35f + m_mugVerticalOffset, 0.0f);  // Lower position creates visible rim
 
