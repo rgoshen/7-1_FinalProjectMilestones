@@ -45,6 +45,16 @@ public:
 		std::string tag;
 	};
 
+	struct DIRECTIONAL_LIGHT
+	{
+		glm::vec3 direction;
+		glm::vec3 ambient;
+		glm::vec3 diffuse;
+		glm::vec3 specular;
+		float focalStrength;
+		float specularIntensity;
+	};
+
 private:
 	// pointer to shader manager object
 	ShaderManager* m_pShaderManager;
@@ -56,6 +66,10 @@ private:
 	TEXTURE_INFO m_textureIDs[16];
 	// defined object materials
 	std::vector<OBJECT_MATERIAL> m_objectMaterials;
+
+	// directional lights for scene illumination
+	static constexpr int NUM_DIR_LIGHTS = 4;
+	DIRECTIONAL_LIGHT m_dirLights[NUM_DIR_LIGHTS];
 
 	// load texture images and convert to OpenGL texture data
 	bool CreateGLTexture(const char* filename, std::string tag);
@@ -108,6 +122,10 @@ private:
 	// Texture and material setup methods
 	void LoadSceneTextures();
 	void DefineObjectMaterials();
+
+	// Lighting setup methods
+	void DefineLights();
+	void UploadLights();
 
 	// Mug positioning offset for proper alignment
 	float m_mugVerticalOffset;

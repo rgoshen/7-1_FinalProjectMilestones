@@ -506,4 +506,5 @@ FodyWeavers.xsd
 *.dwo
 
 # misc
+.claude/
 CLAUDE.md

@@ -149,8 +149,11 @@ void SceneManager::DestroyGLTextures()
 {
 	for (int i = 0; i < m_loadedTextures; i++)
 	{
-		glGenTextures(1, &m_textureIDs[i].ID);
+		glDeleteTextures(1, &m_textureIDs[i].ID);
+		m_textureIDs[i].ID = 0;
+		m_textureIDs[i].tag.clear();
 	}
+	m_loadedTextures = 0;
 }
 
 /***********************************************************
@@ -237,7 +240,7 @@ bool SceneManager::FindMaterial(std::string tag, OBJECT_MATERIAL& material)
 		}
 	}
 
-	return(true);
+	return bFound;
 }
 
 /***********************************************************
@@ -316,11 +319,19 @@ void SceneManager::SetShaderTexture(
 {
 	if (NULL != m_pShaderManager)
 	{
-		m_pShaderManager->setIntValue(g_UseTextureName, true);
+		int textureSlot = FindTextureSlot(textureTag);
 
-		int textureID = -1;
-		textureID = FindTextureSlot(textureTag);
-		m_pShaderManager->setSampler2DValue(g_TextureValueName, textureID);
+		if (textureSlot >= 0)
+		{
+			m_pShaderManager->setIntValue(g_UseTextureName, true);
+			m_pShaderManager->setSampler2DValue(g_TextureValueName, textureSlot);
+		}
+		else
+		{
+			// Texture tag not found: use solid color path to avoid sampling garbage.
+			m_pShaderManager->setIntValue(g_UseTextureName, false);
+			// (No SetShaderColor here; caller decides the fallback color.)
+		}
 	}
 }
 
@@ -400,6 +411,9 @@ void SceneManager::PrepareScene()
 
 	// Define material properties for all objects
 	DefineObjectMaterials();
+
+	// Define lighting for the scene
+	DefineLights();
 }
 
 /***********************************************************
@@ -450,6 +464,77 @@ void SceneManager::LoadSceneTextures()
 }
 
 /***********************************************************
+ *  DefineLights()
+ *
+ *  This method defines four directional lights that simulate
+ *  natural sunlight entering through a high window (80° elevation,
+ *  45° azimuth) with soft ambient fill from the environment.
+ ***********************************************************/
+void SceneManager::DefineLights()
+{
+	// Light 0 – Sunlight (warm, primary)
+	// Direction: 65° elevation, 45° azimuth
+	m_dirLights[0].direction = glm::normalize(glm::vec3(0.28f, 0.80f, 0.12f));
+	m_dirLights[0].ambient = glm::vec3(0.12f, 0.12f, 0.13f);
+	m_dirLights[0].diffuse = glm::vec3(0.95f, 0.90f, 0.83f);
+	m_dirLights[0].specular = glm::vec3(0.22f);
+	m_dirLights[0].focalStrength = 24.0f;
+	m_dirLights[0].specularIntensity = 0.15f;
+
+	// Light 1 – Sky Fill (cool, opposite direction)
+	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
+	m_dirLights[1].ambient = glm::vec3(0.02f, 0.02f, 0.03f);
+	m_dirLights[1].diffuse = glm::vec3(0.22f, 0.26f, 0.34f);
+	m_dirLights[1].specular = glm::vec3(0.0f);
+	m_dirLights[1].focalStrength = 12.0f;
+	m_dirLights[1].specularIntensity = 0.0f;
+
+	// Light 2 – Wall Bounce (warm, low side fill)
+	m_dirLights[2].direction = glm::normalize(glm::vec3(-0.612f, 0.500f, -0.612f));
+	m_dirLights[2].ambient = glm::vec3(0.01f);
+	m_dirLights[2].diffuse = glm::vec3(0.14f, 0.12f, 0.10f); // lower
+	m_dirLights[2].specular = glm::vec3(0.0f);
+	m_dirLights[2].focalStrength = 10.0f;
+	m_dirLights[2].specularIntensity = 0.0f;
+
+	// Light 3 – Back Fill (neutral, subtle)
+	m_dirLights[3].direction = glm::normalize(glm::vec3(-0.683f, 0.259f, 0.683f));
+	m_dirLights[3].ambient = glm::vec3(0.01f);
+	m_dirLights[3].diffuse = glm::vec3(0.08f); // lower
+	m_dirLights[3].specular = glm::vec3(0.0f);
+	m_dirLights[3].focalStrength = 8.0f;
+	m_dirLights[3].specularIntensity = 0.0f;
+}
+
+/***********************************************************
+ *  UploadLights()
+ *
+ *  This method uploads the directional light data to the
+ *  active shader program. Called once per frame before
+ *  drawing the scene.
+ ***********************************************************/
+void SceneManager::UploadLights()
+{
+	GLuint program = m_pShaderManager->m_programID;
+	glUseProgram(program);
+	m_pShaderManager->setIntValue("bUseLighting", true);
+
+	auto setLight = [&](int index, const DIRECTIONAL_LIGHT& light)
+		{
+			std::string base = "lightSources[" + std::to_string(index) + "]";
+			glm::vec3 position = glm::normalize(light.direction) * 1e6f; // keep the “distant point” approach
+			m_pShaderManager->setVec3Value(base + ".position", position);
+			m_pShaderManager->setVec3Value(base + ".ambientColor", light.ambient);
+			m_pShaderManager->setVec3Value(base + ".diffuseColor", light.diffuse);
+			m_pShaderManager->setVec3Value(base + ".specularColor", light.specular);
+			m_pShaderManager->setFloatValue(base + ".focalStrength", light.focalStrength);
+			m_pShaderManager->setFloatValue(base + ".specularIntensity", light.specularIntensity);
+		};
+
+	for (int i = 0; i < NUM_DIR_LIGHTS; ++i) setLight(i, m_dirLights[i]);
+}
+
+/***********************************************************
  *  DefineObjectMaterials()
  *
  *  This method is used for defining material properties
@@ -460,43 +545,53 @@ void SceneManager::DefineObjectMaterials()
 {
 	// Wood material for table plane
 	OBJECT_MATERIAL woodMaterial;
-	woodMaterial.ambientColor = glm::vec3(0.4f, 0.3f, 0.2f);
-	woodMaterial.ambientStrength = 0.2f;
-	woodMaterial.diffuseColor = glm::vec3(0.6f, 0.4f, 0.2f);
-	woodMaterial.specularColor = glm::vec3(0.3f, 0.3f, 0.3f);
-	woodMaterial.shininess = 16.0;  // Low-medium for natural wood
+	woodMaterial.ambientColor = glm::vec3(0.35f, 0.28f, 0.20f);
+	woodMaterial.ambientStrength = 0.20f;
+	woodMaterial.diffuseColor = glm::vec3(0.55f, 0.40f, 0.22f);
+	woodMaterial.specularColor = glm::vec3(0.03f);
+	woodMaterial.shininess = 8.0f;
 	woodMaterial.tag = "wood";
 	m_objectMaterials.push_back(woodMaterial);
 
 	// Marble material for mug body
 	OBJECT_MATERIAL marbleMaterial;
-	marbleMaterial.ambientColor = glm::vec3(0.3f, 0.3f, 0.3f);
-	marbleMaterial.ambientStrength = 0.3f;
-	marbleMaterial.diffuseColor = glm::vec3(0.6f, 0.6f, 0.6f);
-	marbleMaterial.specularColor = glm::vec3(0.8f, 0.8f, 0.8f);
-	marbleMaterial.shininess = 64.0;  // High for polished marble
+	marbleMaterial.ambientColor = glm::vec3(0.22f);
+	marbleMaterial.ambientStrength = 0.22f;
+	marbleMaterial.diffuseColor = glm::vec3(0.36f);
+	marbleMaterial.specularColor = glm::vec3(0.01f);
+	marbleMaterial.shininess = 4.0f;
 	marbleMaterial.tag = "marble";
 	m_objectMaterials.push_back(marbleMaterial);
 
 	// Ceramic material for mug handle
 	OBJECT_MATERIAL ceramicMaterial;
-	ceramicMaterial.ambientColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	ceramicMaterial.ambientStrength = 0.2f;
-	ceramicMaterial.diffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);
-	ceramicMaterial.specularColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	ceramicMaterial.shininess = 32.0;  // Medium for matte ceramic
+	ceramicMaterial.ambientColor = glm::vec3(0.34f);
+	ceramicMaterial.ambientStrength = 0.16f;
+	ceramicMaterial.diffuseColor = glm::vec3(0.60f);
+	ceramicMaterial.specularColor = glm::vec3(0.02f);
+	ceramicMaterial.shininess = 4.0f;
 	ceramicMaterial.tag = "ceramic";
 	m_objectMaterials.push_back(ceramicMaterial);
 
 	// Concrete material for mug base
 	OBJECT_MATERIAL concreteMaterial;
-	concreteMaterial.ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
-	concreteMaterial.ambientStrength = 0.3f;
-	concreteMaterial.diffuseColor = glm::vec3(0.4f, 0.4f, 0.4f);
-	concreteMaterial.specularColor = glm::vec3(0.1f, 0.1f, 0.1f);
-	concreteMaterial.shininess = 8.0;  // Very low for rough concrete
+	concreteMaterial.ambientColor = glm::vec3(0.20f);
+	concreteMaterial.ambientStrength = 0.30f;
+	concreteMaterial.diffuseColor = glm::vec3(0.40f);
+	concreteMaterial.specularColor = glm::vec3(0.04f);
+	concreteMaterial.shininess = 6.0f;
 	concreteMaterial.tag = "concrete";
 	m_objectMaterials.push_back(concreteMaterial);
+
+	// Coffee (liquid)
+	OBJECT_MATERIAL coffeeMaterial;
+	coffeeMaterial.ambientColor = glm::vec3(0.24f, 0.15f, 0.08f);
+	coffeeMaterial.ambientStrength = 0.25f;
+	coffeeMaterial.diffuseColor = glm::vec3(0.32f, 0.20f, 0.10f);
+	coffeeMaterial.specularColor = glm::vec3(0.08f, 0.06f, 0.04f);
+	coffeeMaterial.shininess = 5.0f;
+	coffeeMaterial.tag = "coffee";
+	m_objectMaterials.push_back(coffeeMaterial);
 }
 
 /***********************************************************
@@ -507,6 +602,9 @@ void SceneManager::DefineObjectMaterials()
  ***********************************************************/
 void SceneManager::RenderScene()
 {
+	// Upload lighting data to shader
+	UploadLights();
+
 	// declare the variables for the transformations
 	glm::vec3 scaleXYZ;
 	float XrotationDegrees = 0.0f;
@@ -543,11 +641,11 @@ void SceneManager::RenderTablePlane()
 	SetShaderMaterial("wood");
 
 	// Set transformations for table (using box for thickness)
-	glm::vec3 scaleXYZ = glm::vec3(20.0f, 0.5f, 20.0f);  // 20x20 surface with 0.5 unit thickness
-	float XrotationDegrees = 0.0f;  // Flat on ground
+	glm::vec3 scaleXYZ = glm::vec3(20.0f, 0.5f, 20.0f);
+	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, -0.25f, 0.0f);  // Lowered so top is at Y=0
+	glm::vec3 positionXYZ = glm::vec3(0.0f, -0.25f, 0.0f);
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -569,15 +667,15 @@ void SceneManager::RenderTablePlane()
  ***********************************************************/
 void SceneManager::RenderMugBody()
 {
-	// Apply grey marble texture to mug body (Part 1 of cohesive multi-textured object)
+	// Apply grey marble texture to mug body
 	SetShaderTexture("marble");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard 1:1 cylindrical mapping
+	SetTextureUVScale(2.0f, 1.0f);
 	SetShaderMaterial("marble");
 
 	// Set transformations for mug body
 	glm::vec3 scaleXYZ = glm::vec3(1.2f, 3.0f, 1.2f);  // Taller than wide
 	float XrotationDegrees = 0.0f;  // Upright cylinder
-	float YrotationDegrees = 0.0f;
+	float YrotationDegrees = 25.0f; // rotate marble seam away from handle/camera
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.5f + m_mugVerticalOffset, 0.0f);  // Sitting on plane
 
@@ -602,13 +700,13 @@ void SceneManager::RenderMugInterior()
 {
 	// Apply pale wall texture to interior (creates light interior surface)
 	SetShaderTexture("pale_wall");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("ceramic");
 
 	// Set transformations for mug interior (smaller diameter creates wall thickness)
 	glm::vec3 scaleXYZ = glm::vec3(1.08f, 2.7f, 1.08f);  // Smaller diameter than outer (1.2) creates visible wall thickness
 	float XrotationDegrees = 0.0f;  // Upright cylinder
-	float YrotationDegrees = 0.0f;
+	float YrotationDegrees = 25.0f;  // keep interior seam aligned with outer body
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.35f + m_mugVerticalOffset, 0.0f);  // Lower position creates visible rim
 
@@ -630,22 +728,30 @@ void SceneManager::RenderMugInterior()
  ***********************************************************/
 void SceneManager::RenderCoffee()
 {
-	// Use brown color for coffee (no texture)
-	SetShaderColor(0.4f, 0.25f, 0.15f, 1.0f);  // Rich brown coffee color
 
 	// Set transformations for coffee (high enough to hide handle interior)
 	glm::vec3 scaleXYZ = glm::vec3(1.06f, 2.6f, 1.06f);  // Slightly smaller than interior (1.08), very full mug
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.3f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 1.46f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 
+	// Apply coffee material and render as a flat, non-textured surface (color path)
+    // This avoids inheriting any previous object’s texture/UV state.
+	m_pShaderManager->setIntValue("bUseTexture", false); // Coffee: flat color, no texture
+	SetShaderMaterial("coffee");
+	SetShaderColor(0.32f, 0.20f, 0.10f, 1.0f); // coffee-brown albedo
+
 	// Draw coffee cylinder with top cap (liquid surface)
-	m_basicMeshes->DrawCylinderMesh(true, true, true);  // Yes top, yes bottom, yes sides
+	m_basicMeshes->DrawCylinderMesh(true, false, true);  // top = true, bottom = false, sides = true
+
+	// Restore for subsequent textured draws
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);  // reset UVs after non-textured draw
 }
 
 /***********************************************************
@@ -660,9 +766,9 @@ void SceneManager::RenderCoffee()
  ***********************************************************/
 void SceneManager::RenderMugHandle()
 {
-	// Apply pale wall texture to handle (Part 2 of cohesive multi-textured object)
+	// Apply pale wall texture to handle
 	SetShaderTexture("pale_wall");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("ceramic");
 
 	// Set transformations for mug handle
@@ -692,17 +798,17 @@ void SceneManager::RenderMugHandle()
  ***********************************************************/
 void SceneManager::RenderMugBase()
 {
-	// Apply cracked cement texture to base (Part 3 of cohesive multi-textured object)
+	// Apply cracked cement texture to base
 	SetShaderTexture("cement");
-	SetTextureUVScale(1.0f, 1.0f);  // Standard mapping
+	SetTextureUVScale(1.0f, 1.0f);
 	SetShaderMaterial("concrete");
 
 	// Set transformations for mug base rim
-	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);  // Smaller than mug body (1.2f), thicker
-	float XrotationDegrees = 90.0f;  // Flat on ground
+	glm::vec3 scaleXYZ = glm::vec3(0.95f, 1.0f, 0.95f);
+	float XrotationDegrees = 90.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.25f, 0.0f);  // Slightly higher above plane
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.25f, 0.0f);
 
 	// Apply transformations (Scale → Rotate → Translate)
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
