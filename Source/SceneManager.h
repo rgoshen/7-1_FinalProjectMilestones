@@ -119,6 +119,9 @@ private:
 	void RenderMugBase();
 	void RenderTablePlane();
 
+	// Desk object rendering methods
+	void RenderBlueSphere();
+
 	// Texture and material setup methods
 	void LoadSceneTextures();
 	void DefineObjectMaterials();
