@@ -403,6 +403,9 @@ void SceneManager::PrepareScene()
 	m_basicMeshes->LoadCylinderMesh();  // Main mug body
 	m_basicMeshes->LoadTorusMesh();     // Handle and base rim
 
+	// Load sphere for stress ball
+	m_basicMeshes->LoadSphereMesh();
+
 	// Set vertical adjustment for mug components
 	m_mugVerticalOffset = -1.25f;  // Adjusted so mug sits properly on base (only half of base visible)
 
@@ -457,6 +460,14 @@ void SceneManager::LoadSceneTextures()
 		"cement");
 	if (!bReturn) {
 		std::cout << "Failed to load cracked-cement.jpg texture" << std::endl;
+	}
+
+	// Load rubber coating texture for stress ball
+	bReturn = CreateGLTexture(
+		"../../Utilities/textures/rubber-coating.jpg",
+		"rubber");
+	if (!bReturn) {
+		std::cout << "Failed to load rubber-coating.jpg texture" << std::endl;
 	}
 
 	// Bind all loaded textures to OpenGL texture slots
@@ -592,6 +603,16 @@ void SceneManager::DefineObjectMaterials()
 	coffeeMaterial.shininess = 5.0f;
 	coffeeMaterial.tag = "coffee";
 	m_objectMaterials.push_back(coffeeMaterial);
+
+	// Blue stress ball (rubber)
+	OBJECT_MATERIAL rubberMaterial;
+	rubberMaterial.ambientColor = glm::vec3(0.15f, 0.20f, 0.35f);
+	rubberMaterial.ambientStrength = 0.35f;
+	rubberMaterial.diffuseColor = glm::vec3(0.30f, 0.40f, 0.70f);
+	rubberMaterial.specularColor = glm::vec3(0.05f, 0.05f, 0.08f);  // Low specular for matte rubber
+	rubberMaterial.shininess = 6.0f;  // Low shininess for rubber
+	rubberMaterial.tag = "rubber";
+	m_objectMaterials.push_back(rubberMaterial);
 }
 
 /***********************************************************
@@ -621,6 +642,9 @@ void SceneManager::RenderScene()
 	RenderCoffee();
 	RenderMugHandle();
 	RenderMugBase();
+
+	// Render desk objects
+	RenderBlueSphere();
 }
 
 /***********************************************************
@@ -816,4 +840,37 @@ void SceneManager::RenderMugBase()
 
 	// Draw the torus
 	m_basicMeshes->DrawTorusMesh();
+}
+
+/***********************************************************
+ *  RenderBlueSphere()
+ *
+ *  Renders blue rubber stress ball
+ *
+ *  ARTISTIC CHOICE: Vibrant blue stress ball adds pop of
+ *  color to the neutral workspace palette and reinforces
+ *  the desk workspace theme. Positioned front-left to create
+ *  visual balance and draw the eye.
+ ***********************************************************/
+void SceneManager::RenderBlueSphere()
+{
+	// Apply rubber coating texture
+	SetShaderTexture("rubber");
+	SetTextureUVScale(1.0f, 1.0f);
+	SetShaderMaterial("rubber");
+
+	// Set transformations for sphere
+	glm::vec3 scaleXYZ = glm::vec3(0.8f, 0.8f, 0.8f);  // Scale 0.8 on default radius 1.0 = effective radius 0.8
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	// Table top is at Y=0.0, sphere radius is 0.8, so center at Y=0.8 sits tangent on table
+	glm::vec3 positionXYZ = glm::vec3(-3.5f, 0.8f, 3.5f);  // Front-left on table
+
+	// Apply transformations
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+
+	// Draw the sphere
+	m_basicMeshes->DrawSphereMesh();
 }
