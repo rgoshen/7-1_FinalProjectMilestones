@@ -158,14 +158,16 @@
 ---
 
 ## Phase 6: Verify Partial Texture Requirement
-**Branch:** `feature/partial-texture` (if needed)
+**Branch:** `feature/partial-texture`
 
-- [ ] Audit current UV coordinates for all textured objects
-- [ ] Verify at least one texture uses partial UV coords (not 0.0-1.0 range)
-- [ ] If missing: modify one object to use partial texture mapping
-- [ ] Test and verify texture displays correctly
-- [ ] Update SUMMARY.md
-- [ ] Commit and merge (if changes made)
+- [x] Audit current UV coordinates for all textured objects
+- [x] Verify at least one texture uses partial UV coords (not 0.0-1.0 range)
+- [x] Modify blue sphere to use partial texture mapping (0.75x0.75 UV scale)
+- [x] Test and verify texture displays correctly
+- [x] Update SUMMARY.md with implementation details
+- [x] Commit and merge to main
+
+**Result:** Both texture requirements now met - Table uses tiled texture (6.0x6.0), Sphere uses partial texture (0.75x0.75)
 
 ---
 
