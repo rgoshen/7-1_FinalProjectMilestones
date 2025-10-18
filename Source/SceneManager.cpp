@@ -889,14 +889,13 @@ void SceneManager::RenderBlueSphere()
 /***********************************************************
  *  RenderKeyboard()
  *
- *  Renders keyboard with two-layer design using solid colors:
+ *  Renders keyboard with realistic three-section layout:
  *  - Layer 1: Black plastic housing/frame
- *  - Layer 2: Dark grey key surface
+ *  - Layer 2: Three separate key sections (left main, middle nav, right numpad)
  *
- *  ARTISTIC CHOICE: Two-layer approach creates dimensional
- *  depth and realistic keyboard appearance while maintaining
- *  low polygon count (only 2 box primitives). Both layers use
- *  solid colors with Phong lighting for realistic appearance.
+ *  ARTISTIC CHOICE: Three-section layout mimics real keyboard design
+ *  with visible gaps showing black frame underneath. Uses only 4 box
+ *  primitives total while creating convincing keyboard appearance.
  ***********************************************************/
 void SceneManager::RenderKeyboard()
 {
@@ -905,8 +904,8 @@ void SceneManager::RenderKeyboard()
 	SetShaderMaterial("plastic");
 	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
 
-	// Base frame transformations
-	glm::vec3 scaleXYZ = glm::vec3(7.0f, 0.10f, 3.0f);  // Increased depth for longer keyboard
+	// Base frame transformations - 3:1 ratio (width:depth)
+	glm::vec3 scaleXYZ = glm::vec3(9.0f, 0.10f, 3.0f);  // Wider and proportionally narrower
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
@@ -917,15 +916,28 @@ void SceneManager::RenderKeyboard()
 		ZrotationDegrees, positionXYZ);
 	m_basicMeshes->DrawBoxMesh();
 
-	// Layer 2: Dark grey key surface (raised above frame)
+	// Layer 2: Three separate key sections (raised above frame) - lighter grey
+	m_pShaderManager->setIntValue("bUseTexture", false);
 	SetShaderMaterial("plastic");
-	SetShaderColor(0.15f, 0.15f, 0.15f, 1.0f);  // Slightly lighter grey for keys
+	SetShaderColor(0.25f, 0.25f, 0.25f, 1.0f);  // Lighter grey for keys
 
-	// Key surface transformations (slightly smaller, raised above base)
-	scaleXYZ = glm::vec3(6.8f, 0.05f, 2.8f);  // Smaller than frame to expose edges
-	positionXYZ = glm::vec3(0.0f, 0.13f, 4.0f);  // Raised 0.08 units above base
+	// Left section - Main keyboard area (extended to fill space)
+	scaleXYZ = glm::vec3(5.0f, 0.05f, 2.8f);
+	positionXYZ = glm::vec3(-1.8f, 0.13f, 4.0f);  // Left side
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
 
-	// Apply transformations and draw key surface
+	// Middle section - Navigation/function area (moved closer to right)
+	scaleXYZ = glm::vec3(1.5f, 0.05f, 2.8f);
+	positionXYZ = glm::vec3(1.75f, 0.13f, 4.0f);  // Equal gap from left
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Right section - Numpad area (equal gap from middle)
+	scaleXYZ = glm::vec3(1.5f, 0.05f, 2.8f);
+	positionXYZ = glm::vec3(3.55f, 0.13f, 4.0f);  // Equal gap from middle
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 	m_basicMeshes->DrawBoxMesh();

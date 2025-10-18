@@ -355,3 +355,95 @@ Keyboard appears as appropriately-sized, realistic workspace element with clear 
 - Screenshot 2025-10-17 170347.png: Visual verification of updated dimensions and spacing
 - SceneManager.cpp:901-936: RenderKeyboard() implementation
 - SceneManager.cpp:866-887: RenderBlueSphere() with updated position
+
+---
+
+### [2025-10-17] Refinement: Three-Section Keyboard Design with Solid Colors
+
+**Change Type:** Refinement
+**Scope:** SceneManager - RenderKeyboard()
+**Branch:** `feature/add-keyboard`
+
+**Summary:**
+Redesigned keyboard to use three-section layout (main keyboard, navigation cluster, numpad) with solid colors instead of textures. This approach creates realistic keyboard appearance through geometric subdivision while avoiding texture-related complications and scope creep.
+
+**Implementation Changes:**
+
+*Three-Section Layout:*
+- **Left section (Main keyboard)**: 5.0 × 0.05 × 2.8 at X = -1.8
+- **Middle section (Navigation)**: 1.5 × 0.05 × 2.8 at X = 1.75
+- **Right section (Numpad)**: 1.5 × 0.05 × 2.8 at X = 3.55
+- Equal gaps of 0.3 units between sections expose black frame underneath
+- Overall frame: 9.0 × 0.10 × 3.0 (3:1 width:depth ratio)
+
+*Color and Material:*
+- Frame: Black plastic (0.08, 0.08, 0.08) - same as before
+- Key sections: Lighter grey (0.25, 0.25, 0.25) - increased from 0.15 for better contrast
+- All sections use "plastic" material with Phong lighting
+- No textures required
+
+*Primitive Count:*
+- Total: 4 box primitives (1 frame + 3 key sections)
+- Well within low-polygon budget (<1000 triangles)
+
+**Rationale:**
+
+*Why Three Sections vs Single Surface:*
+Real keyboards have distinct visual separation between main typing area, navigation cluster (arrows/home/end), and numeric keypad. Three-section design creates this realistic layout while maintaining extremely low polygon count. Visible gaps between sections add authenticity and depth through shadow effects under scene lighting.
+
+*Why Solid Colors vs Texture:*
+Multiple texture approaches were attempted but encountered significant issues:
+1. **Original keyboard.jpg (7471×3098)**: Caused application crash - unusual dimensions exceeded GPU texture limits or had memory alignment issues
+2. **Resized keyboard.jpg (1024×1024)**: Contained large grey padding around actual keyboard image. Attempts to use partial UV mapping resulted in tiling artifacts or incomplete coverage
+3. **Custom texture creation**: Would require external image editing work to crop/create properly-sized keyboard texture - deemed **out of scope** for this CS 330 project focused on 3D graphics programming, not texture asset creation
+
+Solid color approach provides:
+- **Stable rendering** without crash risks
+- **Clean visual appearance** with clear section differentiation
+- **Phong lighting interaction** creates realistic plastic surface with highlights and shadows
+- **Demonstrates non-textured rendering path** (project requirement to show both textured and non-textured techniques)
+- **Focuses on geometric design** rather than texture asset management
+
+*Why Equal Gap Spacing:*
+Equidistant gaps (0.3 units) between all sections create visual rhythm and balance. Unequal gaps appeared unintentional/haphazard rather than deliberate design choice.
+
+*Why Keep All Sections in One Function:*
+Keyboard sections remain in single `RenderKeyboard()` method rather than separate `RenderKeyboardMain()`, `RenderKeyboardNav()`, etc. because:
+- All sections are part of same conceptual object (one keyboard)
+- Share identical material, Y position, Z position, and depth
+- Only differ in width and X position (spatial subdivision)
+- Easier to maintain equal gap spacing with all sections visible together
+- Less code duplication
+
+This differs from coffee mug approach where each part (body, handle, interior, coffee) uses different shapes, materials, and transformations, justifying separate render methods.
+
+*Keyboard Dimensions:*
+Final 9.0 × 3.0 frame (3:1 ratio) matches realistic keyboard proportions. Main keyboard section (5.0 width) dominates layout as expected, with smaller navigation (1.5) and numpad (1.5) sections as accents. Total width fits well within table bounds while maintaining clear foreground positioning.
+
+**Technical Notes:**
+- Left section positioned at X = -1.8 (ends at 0.7)
+- Middle section positioned at X = 1.75 (starts at 1.0, ends at 2.5) - 0.3 gap from left
+- Right section positioned at X = 3.55 (starts at 2.8) - 0.3 gap from middle
+- All sections raised to Y = 0.13 (0.08 above frame at Y = 0.05)
+- Frame depth increased from 2.5 to 3.0 to maintain 3:1 width:depth ratio
+
+**Alternatives Considered:**
+- Texture-based approach: Rejected due to GPU compatibility issues and scope creep into asset creation
+- Single solid surface: Rejected - lacks visual interest and realism of sectioned keyboard
+- Four sections (separate arrow cluster): Rejected - added complexity without proportional visual benefit
+- Separate render functions per section: Rejected - unnecessary code duplication for spatially-divided single object
+
+**Project Requirements Met:**
+- Demonstrates non-textured rendering with Phong lighting (complements textured objects like table, mug, sphere)
+- Uses simple primitives (4 boxes) maintaining low-polygon requirement
+- Proper transformations applied (Scale → Rotate → Translate order)
+- Materials defined with comprehensive Phong properties
+- Avoids scope creep into texture asset creation
+
+**Visual Result:**
+Keyboard appears as realistic, modern full-size keyboard with distinct main typing area and smaller navigation/numpad sections. Equal black gaps create visual rhythm and depth. Lighter grey (0.25) provides clear contrast against black frame while maintaining cohesive color scheme with scene's neutral palette.
+
+**References:**
+- Screenshot 2025-10-17 182919.png: Final three-section layout with equal gaps
+- SceneManager.cpp:889-948: RenderKeyboard() with three-section implementation
+- keyboard.jpg texture testing: Multiple iterations attempted, all rejected for technical/scope reasons
