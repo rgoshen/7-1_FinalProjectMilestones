@@ -51,26 +51,27 @@
 - [x] Call `RenderTouchpad()` in `RenderScene()`
 - [x] Test build and visual verification (5 objects total now)
 - [x] Update SUMMARY.md with implementation notes
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Commit changes
+- [x] Merge to main
 
 ---
 
 ## Phase 4: Enhanced Scene Lighting
 **Branch:** `feature/enhance-lighting`
 
-- [ ] Create feature branch from main
-- [ ] Update `NUM_DIR_LIGHTS` to 5 in `SceneManager.h`
-- [ ] Update `TOTAL_LIGHTS` to 5 in `fragmentShader.glsl`
-- [ ] Add Light 4 (overhead) definition in `DefineLights()`
-- [ ] Brighten Light 1 diffuse: (0.22, 0.26, 0.34) → (0.38, 0.42, 0.50)
-- [ ] Brighten Light 1 ambient: 0.02 → 0.04
-- [ ] Brighten Light 2 diffuse: (0.14, 0.12, 0.10) → (0.28, 0.24, 0.20)
-- [ ] Brighten Light 2 ambient: 0.01 → 0.02
-- [ ] Brighten Light 3 diffuse: 0.08 → 0.18
-- [ ] Brighten Light 3 ambient: 0.01 → 0.02
-- [ ] Test build and visual verification (no dark shadows)
-- [ ] Update SUMMARY.md with lighting rationale
+- [x] Create feature branch from main
+- [x] Update `NUM_DIR_LIGHTS` to 5 in `SceneManager.h`
+- [x] Update `TOTAL_LIGHTS` to 5 in `fragmentShader.glsl`
+- [x] Add Light 4 (overhead indoor) definition in `DefineLights()`
+- [x] Brighten Light 1 diffuse: (0.22, 0.26, 0.34) → (0.38, 0.42, 0.50)
+- [x] Brighten Light 1 ambient: 0.02 → 0.04
+- [x] Brighten Light 2 diffuse: (0.14, 0.12, 0.10) → (0.28, 0.24, 0.20)
+- [x] Brighten Light 2 ambient: 0.01 → 0.02
+- [x] Brighten Light 3 diffuse: 0.08 → 0.18
+- [x] Brighten Light 3 ambient: 0.01 → 0.02
+- [x] Adjust Light 0 for sunset: lower elevation (~35°), add warm orange/red tones
+- [x] Test build and visual verification (no dark shadows)
+- [x] Update SUMMARY.md with lighting rationale
 - [ ] Commit changes
 - [ ] Merge to main
 
