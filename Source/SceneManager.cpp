@@ -613,6 +613,16 @@ void SceneManager::DefineObjectMaterials()
 	rubberMaterial.shininess = 6.0f;  // Low shininess for rubber
 	rubberMaterial.tag = "rubber";
 	m_objectMaterials.push_back(rubberMaterial);
+
+	// Black plastic for keyboard frame
+	OBJECT_MATERIAL plasticMaterial;
+	plasticMaterial.ambientColor = glm::vec3(0.02f, 0.02f, 0.02f);
+	plasticMaterial.ambientStrength = 0.15f;
+	plasticMaterial.diffuseColor = glm::vec3(0.08f, 0.08f, 0.08f);
+	plasticMaterial.specularColor = glm::vec3(0.10f, 0.10f, 0.10f);
+	plasticMaterial.shininess = 12.0f;
+	plasticMaterial.tag = "plastic";
+	m_objectMaterials.push_back(plasticMaterial);
 }
 
 /***********************************************************
@@ -645,6 +655,7 @@ void SceneManager::RenderScene()
 
 	// Render desk objects
 	RenderBlueSphere();
+	RenderKeyboard();
 }
 
 /***********************************************************
@@ -865,7 +876,7 @@ void SceneManager::RenderBlueSphere()
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
 	// Table top is at Y=0.0, sphere radius is 0.8, so center at Y=0.8 sits tangent on table
-	glm::vec3 positionXYZ = glm::vec3(-3.5f, 0.8f, 3.5f);  // Front-left on table
+	glm::vec3 positionXYZ = glm::vec3(-5.5f, 0.8f, 3.5f);  // Moved further left for spacing
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -873,4 +884,53 @@ void SceneManager::RenderBlueSphere()
 
 	// Draw the sphere
 	m_basicMeshes->DrawSphereMesh();
+}
+
+/***********************************************************
+ *  RenderKeyboard()
+ *
+ *  Renders keyboard with two-layer design using solid colors:
+ *  - Layer 1: Black plastic housing/frame
+ *  - Layer 2: Dark grey key surface
+ *
+ *  ARTISTIC CHOICE: Two-layer approach creates dimensional
+ *  depth and realistic keyboard appearance while maintaining
+ *  low polygon count (only 2 box primitives). Both layers use
+ *  solid colors with Phong lighting for realistic appearance.
+ ***********************************************************/
+void SceneManager::RenderKeyboard()
+{
+	// Layer 1: Black plastic keyboard frame/housing
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Base frame transformations
+	glm::vec3 scaleXYZ = glm::vec3(7.0f, 0.10f, 3.0f);  // Increased depth for longer keyboard
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.05f, 4.0f);  // Closer to camera with space from mug
+
+	// Apply transformations and draw frame
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Layer 2: Dark grey key surface (raised above frame)
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.15f, 0.15f, 0.15f, 1.0f);  // Slightly lighter grey for keys
+
+	// Key surface transformations (slightly smaller, raised above base)
+	scaleXYZ = glm::vec3(6.8f, 0.05f, 2.8f);  // Smaller than frame to expose edges
+	positionXYZ = glm::vec3(0.0f, 0.13f, 4.0f);  // Raised 0.08 units above base
+
+	// Apply transformations and draw key surface
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Restore texture state for subsequent draws
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
 }

@@ -18,23 +18,23 @@
 - [x] Position at front-left (-3.5, 0.8, 3.5) - Y=0.8 for tangent placement
 - [x] Test build and visual verification
 - [x] Update SUMMARY.md with implementation notes
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Commit changes
+- [x] Merge to main (via PR #4)
 
 ---
 
 ## Phase 2: Add Keyboard Object
 **Branch:** `feature/add-keyboard`
 
-- [ ] Create feature branch from main
-- [ ] Create `RenderKeyboard()` method (uses existing box mesh)
-- [ ] Define dark tech material in `DefineObjectMaterials()`
-- [ ] Add texture for keyboard (if using textured approach)
-- [ ] Position at center desk (~x:0, z:1.5)
-- [ ] Scale as thin rectangle (~4.5w x 0.15h x 1.5d)
-- [ ] Call `RenderKeyboard()` in `RenderScene()`
-- [ ] Test build and visual verification
-- [ ] Update SUMMARY.md with implementation notes
+- [x] Create feature branch from main
+- [x] Create `RenderKeyboard()` method (uses existing box mesh)
+- [x] Define dark tech material in `DefineObjectMaterials()`
+- [x] Add texture for keyboard (using solid colors - texture caused crashes)
+- [x] Position at center desk (x:0, z:4.0 for proper spacing)
+- [x] Scale as thin rectangle (7.0w x 0.10h x 3.0d frame, 6.8w x 0.05h x 2.8d keys)
+- [x] Call `RenderKeyboard()` in `RenderScene()`
+- [x] Test build and visual verification
+- [x] Update SUMMARY.md with implementation notes
 - [ ] Commit changes
 - [ ] Merge to main
 
@@ -76,7 +76,24 @@
 
 ---
 
-## Phase 5: Verify Partial Texture Requirement
+## Phase 5: Scene Composition Adjustments
+**Branch:** `refactor/scene-adjustments`
+
+- [ ] Create feature branch from current state
+- [ ] Review overall scene composition and proportions
+- [ ] Adjust object positions for optimal spacing and balance
+- [ ] Fine-tune object scales for realistic proportions relative to each other
+- [ ] Verify camera default position provides good initial view
+- [ ] Test navigation to ensure all objects are easily viewable
+- [ ] Verify no visual collisions or overlaps from multiple angles
+- [ ] Ensure foreground/midground/background layering is clear
+- [ ] Update SUMMARY.md with adjustment rationale
+- [ ] Commit changes
+- [ ] Merge to main
+
+---
+
+## Phase 6: Verify Partial Texture Requirement
 **Branch:** `feature/partial-texture` (if needed)
 
 - [ ] Audit current UV coordinates for all textured objects
@@ -88,7 +105,7 @@
 
 ---
 
-## Phase 6: Code Quality & Comments
+## Phase 7: Code Quality & Comments
 **Branch:** `refactor/code-quality`
 
 - [ ] Create feature branch from main
@@ -106,7 +123,7 @@
 
 ---
 
-## Phase 7: Final Validation & Build
+## Phase 8: Final Validation & Build
 **Branch:** N/A (validation only)
 
 - [ ] Build Release configuration (Win32)
