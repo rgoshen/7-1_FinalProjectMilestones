@@ -995,3 +995,106 @@ Monitor appears as modern flat-screen display with minimalist central stand behi
 - SceneManager.cpp:1033-1205: Monitor component implementations
 - SceneManager.cpp:636-657: Material definitions (semi_gloss_plastic, screen)
 - final_project_requirements.md: Complex object requirement, best practices guidelines
+
+---
+
+## [2025-10-17] Phase 5: Scene Composition Adjustments - Mug Refactoring and Repositioning
+
+**Change Type:** Refactor + Feature
+**Scope:** SceneManager
+**Branch:** `refactor/scene-adjustments`
+
+**Summary:**
+Refactored coffee mug rendering to use orchestrator pattern matching monitor implementation, then adjusted mug scale and position to better match reference image proportions and composition.
+
+**Changes Made:**
+
+1. **Refactored RenderMug() to Orchestrator Pattern**
+   - Created new `RenderMug()` orchestrator method in SceneManager.cpp:700-707
+   - Added `RenderMug()` declaration to SceneManager.h:115
+   - Updated `RenderScene()` to call `RenderMug()` instead of individual components
+   - Maintains consistency with `RenderMonitor()` pattern
+   - Improves code organization and encapsulation
+
+2. **Scaled Down Mug by 25%**
+   - Previous mug appeared too large relative to other desk objects
+   - Applied uniform 0.75x scale to all components and positions:
+     * MugBody: (1.2, 3.0, 1.2) → (0.9, 2.25, 0.9)
+     * MugInterior: (1.08, 2.7, 1.08) → (0.81, 2.025, 0.81)
+     * Coffee: (1.06, 2.6, 1.06) → (0.795, 1.95, 0.795)
+     * MugHandle: (0.8, 0.4, 0.3) → (0.6, 0.3, 0.225)
+     * MugBase: (0.95, 1.0, 0.95) → (0.7125, 0.75, 0.7125)
+     * m_mugVerticalOffset: -1.25 → -0.9375
+   - Scaled all Y positions proportionally to maintain alignment
+
+3. **Repositioned Mug Further Left**
+   - Initial position: X=0.0, Z=0.0 (center)
+   - First adjustment: X=-3.5, Z=2.5 (ERROR: moved forward incorrectly)
+   - Correction: X=-3.5, Z=0.0 (directly left only)
+   - Final position: X=-5.0, Z=0.0 (further left per reference image)
+   - Handle adjusted: X=-4.04 (maintains offset from mug center)
+
+**Rationale:**
+
+*Orchestrator Pattern Refactoring:*
+- Creates consistency with `RenderMonitor()` architecture
+- Improves code maintainability and readability
+- Follows best practices for function encapsulation
+- Makes high-level scene composition clear in `RenderScene()`
+
+*25% Scale Reduction:*
+- Reference image shows mug as secondary element, not dominant centerpiece
+- Previous scale made mug disproportionately large compared to keyboard and monitor
+- Smaller scale improves overall scene balance and realism
+- User confirmed improved proportions after scaling
+
+*Left Repositioning:*
+- Reference image shows mug positioned left of center
+- X=-5.0 aligns better with reference composition
+- Maintains Z=0.0 to keep mug in foreground plane
+- Creates visual separation from keyboard (centered at X=0.0)
+
+**Challenges:**
+
+*Challenge 1: Directional Movement Confusion*
+- Initial repositioning moved mug to X=-3.5, Z=2.5
+- User corrected: "I said directly left, you moved it forward too"
+- Learned: "Directly left" means only change X, not Z
+- Fixed by reverting Z to 0.0 for all components
+
+*Challenge 2: Handle Position Calculation*
+- Handle positioned relative to mug center
+- Original offset: 1.28 units right of center (X=0.0 + 1.28 = 1.28)
+- After scaling: 1.28 × 0.75 = 0.96
+- New position: X=-5.0 + 0.96 = -4.04 (maintains proportional offset)
+
+**Alternatives Considered:**
+
+- **Position first, then scale**: Rejected - scaling changes absolute positions, would require re-positioning
+- **Scale separately per component**: Rejected - non-uniform scaling would break proportional relationships
+- **Larger scale reduction (50%)**: Rejected - 25% provided good balance without making mug too small
+- **Center position**: Rejected - reference image shows left-of-center placement
+
+**Project Requirements Met:**
+
+- **Best Practices**: Improved encapsulation through orchestrator pattern ✓
+- **No Code Duplication**: Refactored to eliminate repeated component calls ✓
+- **Function Encapsulation**: Component methods called through orchestrator ✓
+- **Comprehensive Comments**: Updated comments reflect new positioning ✓
+
+**Next Steps:**
+- Adjust monitor width and position (appears too narrow in current view)
+- Adjust keyboard position and scale to match reference
+- Adjust touchpad position and scale to match reference
+- Adjust sphere position if needed for compositional balance
+
+**Visual Result:**
+Coffee mug now appears at appropriate desk accessory scale rather than oversized centerpiece. Positioned left of center creates asymmetric but balanced composition. All five components (body, interior, coffee, handle, base) maintain proportional relationships and proper alignment at new scale and position.
+
+**References:**
+- TODO.md Phase 5: Scene Composition Adjustments checklist
+- desk_scene.png: Reference image for composition and proportions
+- SceneManager.h:115-121: Mug render method declarations
+- SceneManager.cpp:700-707: RenderMug() orchestrator implementation
+- SceneManager.cpp:751-902: Individual mug component render methods
+- SceneManager.cpp:413: m_mugVerticalOffset adjustment

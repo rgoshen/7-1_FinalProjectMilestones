@@ -109,14 +109,19 @@
 ## Phase 5: Scene Composition Adjustments
 **Branch:** `refactor/scene-adjustments`
 
-- [ ] Create feature branch from current state
-- [ ] Refactor RenderMug pattern to match RenderMonitor
-  - [ ] Create RenderMug() method that calls component methods
-  - [ ] Update RenderScene() to call RenderMug() instead of individual components
-  - [ ] Maintains same pattern: orchestrator function calls sub-components
+- [x] Create feature branch from current state
+- [x] Refactor RenderMug pattern to match RenderMonitor
+  - [x] Create RenderMug() method that calls component methods
+  - [x] Update RenderScene() to call RenderMug() instead of individual components
+  - [x] Maintains same pattern: orchestrator function calls sub-components
+- [x] Adjust mug size and position to match reference image
+  - [x] Scale down by 25% (all components: body, interior, coffee, handle, base)
+  - [x] Reposition to X=-5.0, Z=0.0 (further left, aligned with reference)
+- [ ] Adjust monitor position and scale to match reference image
+- [ ] Adjust keyboard position and scale to match reference image
+- [ ] Adjust touchpad position and scale to match reference image
+- [ ] Adjust sphere position and scale to match reference image
 - [ ] Review overall scene composition and proportions
-- [ ] Adjust object positions for optimal spacing and balance
-- [ ] Fine-tune object scales for realistic proportions relative to each other
 - [ ] Verify camera default position provides good initial view
 - [ ] Test navigation to ensure all objects are easily viewable
 - [ ] Verify no visual collisions or overlaps from multiple angles
