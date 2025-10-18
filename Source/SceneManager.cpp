@@ -760,7 +760,7 @@ void SceneManager::RenderMugBody()
 	float XrotationDegrees = 0.0f;  // Upright cylinder
 	float YrotationDegrees = 25.0f; // rotate marble seam away from handle/camera
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.125f + m_mugVerticalOffset, 0.0f);  // Further left
+	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.125f + m_mugVerticalOffset, 1.0f);  // Moved back slightly
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -791,7 +791,7 @@ void SceneManager::RenderMugInterior()
 	float XrotationDegrees = 0.0f;  // Upright cylinder
 	float YrotationDegrees = 25.0f;  // keep interior seam aligned with outer body
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.0125f + m_mugVerticalOffset, 0.0f);  // Lower position creates visible rim
+	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.0125f + m_mugVerticalOffset, 1.0f);  // Moved back slightly
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -817,7 +817,7 @@ void SceneManager::RenderCoffee()
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.095f + m_mugVerticalOffset, 0.0f);  // Higher position for fuller coffee level
+	glm::vec3 positionXYZ = glm::vec3(-5.0f, 1.095f + m_mugVerticalOffset, 1.0f);  // Moved back slightly
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -859,7 +859,7 @@ void SceneManager::RenderMugHandle()
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 90.0f;  // Rotate around Z to make it vertical
-	glm::vec3 positionXYZ = glm::vec3(-4.04f, 2.16f + m_mugVerticalOffset, 0.0f);  // Side of mug, slightly lower
+	glm::vec3 positionXYZ = glm::vec3(-4.04f, 2.16f + m_mugVerticalOffset, 1.0f);  // Moved back slightly
 
 	// Apply transformations
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -891,7 +891,7 @@ void SceneManager::RenderMugBase()
 	float XrotationDegrees = 90.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(-5.0f, 0.1875f, 0.0f);
+	glm::vec3 positionXYZ = glm::vec3(-5.0f, 0.1875f, 1.0f);
 
 	// Apply transformations (Scale → Rotate → Translate)
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
@@ -1080,11 +1080,11 @@ void SceneManager::RenderMonitorBase()
 	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
 
 	// Set transformations for flattened sphere base
-	glm::vec3 scaleXYZ = glm::vec3(1.8f, 0.15f, 1.8f);  // Flattened sphere for stability
+	glm::vec3 scaleXYZ = glm::vec3(2.5f, 0.15f, 2.5f);  // Larger flattened sphere for stability with wider monitor
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.15f, -5.8f);  // Behind mug, aligned with post
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.15f, -2.5f);  // Moved forward, behind mug
 
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
@@ -1111,14 +1111,14 @@ void SceneManager::RenderMonitorPole()
 	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
 
 	// Set transformations for vertical rectangular pole
-	// Monitor bottom at Y=2.0, height=4.5, so top at Y=6.5
-	// Pole extends to 3/4 monitor height = 3.375, so top at Y=5.375
-	// Pole goes from Y=0.3 (base top) to Y=5.375, height=5.075, center at Y=2.8375
-	glm::vec3 scaleXYZ = glm::vec3(0.5f, 5.075f, 0.2f);  // Wide thin rectangle
+	// Monitor bottom at Y=2.0, height=6.1875, so top at Y=8.1875
+	// Pole extends to 3/4 monitor height = 4.640625, so top at Y=6.640625
+	// Pole goes from Y=0.3 (base top) to Y=6.640625, height=6.340625, center at Y=3.4703125
+	glm::vec3 scaleXYZ = glm::vec3(0.5f, 6.340625f, 0.2f);  // Wide thin rectangle, extended for taller monitor
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 2.8375f, -5.8f);  // Centered on base, behind monitor
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 3.4703125f, -2.5f);  // Moved forward with base
 
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
@@ -1146,15 +1146,13 @@ void SceneManager::RenderMonitorConnector()
 	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
 
 	// Set transformations for horizontal cylinder connector
-	// Connects post front (Z=-5.7) to monitor back (Z=-5.5)
+	// Connects post front to monitor back
 	// Cylinder rotated 90° on X-axis to make it horizontal (pointing in Z direction)
-	// Post front at -5.7, monitor back at -5.5, extend into both for solid connection
-	// Center at -5.625, extends from -5.8 (into post) to -5.45 (into monitor back)
 	glm::vec3 scaleXYZ = glm::vec3(0.15f, 0.35f, 0.15f);  // Horizontal cylinder, length 0.35
 	float XrotationDegrees = 90.0f;  // Rotate to horizontal (point in Z direction)
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.684f);  // Centered between post and monitor back
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 5.09375f, -2.388f);  // Moved forward, aligned with monitor center height
 
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
@@ -1181,11 +1179,11 @@ void SceneManager::RenderMonitorFrame()
 	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
 
 	// Set transformations for monitor frame
-	glm::vec3 scaleXYZ = glm::vec3(8.0f, 4.5f, 0.3f);  // 16:9 aspect ratio
+	glm::vec3 scaleXYZ = glm::vec3(11.0f, 6.1875f, 0.3f);  // 16:9 aspect ratio, increased width
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.35f);  // Lowered: bottom at Y=2.0, top at Y=6.5
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 5.09375f, -2.05f);  // Moved forward: bottom at Y=2.0, top at Y=8.1875
 
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
@@ -1212,11 +1210,11 @@ void SceneManager::RenderMonitorScreen()
 	SetShaderColor(0.02f, 0.02f, 0.02f, 1.0f);
 
 	// Set transformations for screen (slightly smaller than frame, inset)
-	glm::vec3 scaleXYZ = glm::vec3(7.6f, 4.2f, 0.25f);  // Smaller than frame
+	glm::vec3 scaleXYZ = glm::vec3(10.6f, 5.8875f, 0.25f);  // Smaller than frame to create bezel
 	float XrotationDegrees = 0.0f;
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
-	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.30f);  // Aligned with frame center, slightly forward
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 5.09375f, -2.0f);  // Moved forward, aligned with frame center, slightly forward
 
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
