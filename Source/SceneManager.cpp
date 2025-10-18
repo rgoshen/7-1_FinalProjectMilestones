@@ -656,6 +656,7 @@ void SceneManager::RenderScene()
 	// Render desk objects
 	RenderBlueSphere();
 	RenderKeyboard();
+	RenderTouchpad();
 }
 
 /***********************************************************
@@ -938,6 +939,56 @@ void SceneManager::RenderKeyboard()
 	// Right section - Numpad area (equal gap from middle)
 	scaleXYZ = glm::vec3(1.5f, 0.05f, 2.8f);
 	positionXYZ = glm::vec3(3.55f, 0.13f, 4.0f);  // Equal gap from middle
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Restore texture state for subsequent draws
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderTouchpad()
+ *
+ *  Renders touchpad with two-layer flush design:
+ *  - Layer 1: Black plastic frame/border
+ *  - Layer 2: Grey touch surface (flush with frame)
+ *
+ *  ARTISTIC CHOICE: Square touchpad positioned right of
+ *  keyboard creates balanced workspace composition. Flush
+ *  surface design (vs raised keyboard keys) reflects realistic
+ *  touchpad appearance. Uses only 2 box primitives for
+ *  extremely low polygon count.
+ ***********************************************************/
+void SceneManager::RenderTouchpad()
+{
+	// Layer 1: Black plastic touchpad frame/border
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Base frame transformations - square shape (smaller)
+	glm::vec3 scaleXYZ = glm::vec3(2.0f, 0.10f, 2.0f);  // Smaller square touchpad frame
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(6.0f, 0.05f, 4.0f);  // Right of keyboard
+
+	// Apply transformations and draw frame
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Layer 2: Grey touch surface (minimally raised)
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.25f, 0.25f, 0.25f, 1.0f);  // Lighter grey for surface
+
+	// Touch surface transformations (slightly smaller, minimally raised)
+	scaleXYZ = glm::vec3(1.8f, 0.05f, 1.8f);  // Smaller to expose frame border, thinner for raised look
+	positionXYZ = glm::vec3(6.0f, 0.08f, 4.0f);  // Raised 0.03 units above frame
+
+	// Apply transformations and draw surface
 	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
 		ZrotationDegrees, positionXYZ);
 	m_basicMeshes->DrawBoxMesh();
