@@ -101,8 +101,8 @@
 - [x] Call `RenderMonitor()` in `RenderScene()`
 - [x] Test build and visual verification
 - [x] Update SUMMARY.md with implementation notes
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Commit changes
+- [x] Merge to main
 
 ---
 
@@ -116,19 +116,44 @@
   - [x] Maintains same pattern: orchestrator function calls sub-components
 - [x] Adjust mug size and position to match reference image
   - [x] Scale down by 25% (all components: body, interior, coffee, handle, base)
-  - [x] Reposition to X=-5.0, Z=0.0 (further left, aligned with reference)
-- [ ] Adjust monitor position and scale to match reference image
-- [ ] Adjust keyboard position and scale to match reference image
-- [ ] Adjust touchpad position and scale to match reference image
-- [ ] Adjust sphere position and scale to match reference image
-- [ ] Review overall scene composition and proportions
-- [ ] Verify camera default position provides good initial view
-- [ ] Test navigation to ensure all objects are easily viewable
-- [ ] Verify no visual collisions or overlaps from multiple angles
-- [ ] Ensure foreground/midground/background layering is clear
-- [ ] Update SUMMARY.md with adjustment rationale
+  - [x] Reposition to X=-5.0, Z=1.0 (left and forward for depth layering)
+- [x] Adjust monitor position and scale to match reference image
+  - [x] Increase width: 8.0 → 11.0 (maintaining 16:9 aspect ratio)
+  - [x] Extend pole height for taller monitor: 5.075 → 6.340625
+  - [x] Move forward: Z=-5.8/-5.3 → Z=-2.5/-2.0 (closer to keyboard)
+  - [x] Increase base size: 1.8 → 2.5 diameter
+- [x] Adjust keyboard position and scale to match reference image
+- [x] Adjust touchpad position and scale to match reference image
+- [x] Adjust sphere position and scale to match reference image
+- [x] Review overall scene composition and proportions
+- [x] Verify camera default position provides good initial view
+- [x] Test navigation to ensure all objects are easily viewable
+- [x] Verify no visual collisions or overlaps from multiple angles
+- [x] Ensure foreground/midground/background layering is clear
+- [x] Update SUMMARY.md with adjustment rationale
+- [x] Commit changes
+- [x] Merge to main
+
+---
+
+## Phase 5a: Add Background Wall
+**Branch:** `feature/add-wall`
+
+- [ ] Create feature branch from main
+- [ ] Create `RenderWall()` method in SceneManager
+- [ ] Add wall declaration to SceneManager.h
+- [ ] Position wall behind monitor (Z=-4.0 or similar)
+- [ ] Use large vertical plane or thin box (25w x 12h x 0.1d)
+- [ ] Apply light neutral texture or color (pale wall texture or light gray)
+- [ ] Add wall material to `DefineObjectMaterials()` if needed
+- [ ] Call `RenderWall()` in `RenderScene()`
+- [ ] Test build and visual verification
+- [ ] Verify monitor visibility improved against light background
+- [ ] Update SUMMARY.md with wall implementation notes
 - [ ] Commit changes
 - [ ] Merge to main
+
+**Rationale:** Dark monitor against black background lacks contrast. Light-colored wall will make monitor stand out clearly and add realism to desk workspace setting.
 
 ---
 
