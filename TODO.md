@@ -174,18 +174,18 @@
 ## Phase 7: Code Quality & Comments
 **Branch:** `refactor/code-quality`
 
-- [ ] Create feature branch from main
-- [ ] Add function header comments to all `Render*()` methods
-- [ ] Add inline comments for transformation logic
-- [ ] Add inline comments for lighting setup
-- [ ] Extract magic numbers to named constants (positions, scales)
-- [ ] Extract magic numbers for light values
-- [ ] Extract magic numbers for UV scales
-- [ ] Review for code duplication
-- [ ] Verify consistent formatting (tabs/spacing)
-- [ ] Update SUMMARY.md
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Create feature branch from main
+- [x] Add function header comments to all `Render*()` methods
+- [x] Add inline comments for transformation logic
+- [x] Add inline comments for lighting setup
+- [x] Extract magic numbers to named constants (positions, scales)
+- [x] Extract magic numbers for light values
+- [x] Extract magic numbers for UV scales
+- [x] Review for code duplication
+- [x] Verify consistent formatting (tabs/spacing)
+- [x] Update SUMMARY.md
+- [x] Commit changes
+- [x] Merge to main
 
 ---
 
@@ -206,12 +206,3 @@
 - [ ] Visual inspection: no completely dark objects
 - [ ] Check for compiler warnings (should be 0)
 - [ ] Collect submission files (exe, source, shaders, textures, project files)
-
----
-
-## Parking Lot (Optional Enhancements)
-
-- [ ] Add pen holder (cone) for 5th object
-- [ ] Add smart speaker (cylinder) for 6th object
-- [ ] Add monitor with stand
-- [ ] Optimize material properties
