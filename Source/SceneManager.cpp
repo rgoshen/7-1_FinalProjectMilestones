@@ -654,6 +654,16 @@ void SceneManager::DefineObjectMaterials()
 	screenMaterial.shininess = 64.0f;
 	screenMaterial.tag = "screen";
 	m_objectMaterials.push_back(screenMaterial);
+
+	// Wall material (uses ceramic material values for matte appearance)
+	OBJECT_MATERIAL wallMaterial;
+	wallMaterial.ambientColor = glm::vec3(0.34f);
+	wallMaterial.ambientStrength = 0.16f;
+	wallMaterial.diffuseColor = glm::vec3(0.60f);
+	wallMaterial.specularColor = glm::vec3(0.02f);
+	wallMaterial.shininess = 4.0f;
+	wallMaterial.tag = "wall";
+	m_objectMaterials.push_back(wallMaterial);
 }
 
 /***********************************************************
@@ -673,6 +683,9 @@ void SceneManager::RenderScene()
 	float YrotationDegrees = 0.0f;
 	float ZrotationDegrees = 0.0f;
 	glm::vec3 positionXYZ;
+
+	// Render the background wall (furthest back)
+	RenderWall();
 
 	// Render the table surface
 	RenderTablePlane();
@@ -1223,4 +1236,33 @@ void SceneManager::RenderMonitorScreen()
 	// Restore texture state
 	m_pShaderManager->setIntValue("bUseTexture", true);
 	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderWall()
+ *
+ *  Renders background wall behind desk and monitor.
+ *
+ *  ARTISTIC CHOICE: Light-colored wall provides contrast
+ *  for dark monitor, adds realism to workspace setting,
+ *  and frames the scene with defined background boundary.
+ ***********************************************************/
+void SceneManager::RenderWall()
+{
+	// Apply pale wall texture
+	SetShaderTexture("pale_wall");
+	SetTextureUVScale(2.0f, 2.0f);
+	SetShaderMaterial("wall");
+
+	// Set transformations for wall
+	// Positioned at back edge of table (Z=-10), extends from ground to upper background
+	glm::vec3 scaleXYZ = glm::vec3(25.0f, 13.0f, 1.0f);  // Wider than table, tall background, 1.0 depth
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 6.0f, -10.0f);  // Centered, bottom at Y=-0.5 (ground), at back table edge
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
 }

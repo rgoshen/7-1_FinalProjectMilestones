@@ -1230,3 +1230,121 @@ Monitor now appears as substantial background focal point with proper proportion
 - desk_scene.png: Reference image for monitor proportions and positioning
 - SceneManager.cpp:1075-1228: Monitor component implementations (base, pole, connector, frame, screen)
 - SceneManager.cpp:758-894: Mug component Z-position adjustments
+
+---
+
+## [2025-10-17] Phase 5a: Add Background Wall
+
+**Change Type:** Feature
+**Scope:** SceneManager
+**Branch:** `feature/add-wall`
+
+**Summary:**
+Added light-colored background wall behind desk and monitor to provide contrast for dark monitor screen and add realism to workspace setting.
+
+**Problem:**
+Dark monitor (glossy black screen and semi-gloss black frame) against pure black background lacked visual contrast, making monitor difficult to see clearly in rendered scene. User identified need for wall to improve monitor visibility.
+
+**Changes Made:**
+
+1. **Created RenderWall() Method**
+   - Added RenderWall() declaration to SceneManager.h:137
+   - Implemented in SceneManager.cpp:1238-1265
+   - Renders large box primitive as background wall
+   - Comprehensive function header comment documenting artistic choice
+
+2. **Wall Specifications**
+   - **Size**: 25w x 13h x 1.0d (wider than 20-unit table, tall background, substantial depth)
+   - **Position**: X=0 (centered), Y=6.0 (bottom at Y=-0.5 ground, top at Y=12.5), Z=-10 (back table edge)
+   - **Texture**: pale_wall.jpg (already loaded for mug interior/handle)
+   - **UV Scale**: 2.0 x 2.0 (subtle tiling for texture detail)
+   - **Material**: New "wall" material with ceramic properties
+
+3. **Wall Material Definition**
+   - Added to DefineObjectMaterials() in SceneManager.cpp:658-666
+   - Uses ceramic material values for matte appearance:
+     * ambientColor: (0.34, 0.34, 0.34) - light neutral gray
+     * ambientStrength: 0.16 - moderate ambient response
+     * diffuseColor: (0.60, 0.60, 0.60) - light diffuse color
+     * specularColor: (0.02, 0.02, 0.02) - very low specular (matte)
+     * shininess: 4.0 - low shininess for matte finish
+   - Tag: "wall"
+
+4. **Render Order**
+   - Called first in RenderScene() (line 688) before all other objects
+   - Renders at furthest Z depth (Z=-10) to act as background
+   - Ensures wall appears behind all scene elements
+
+**Rationale:**
+
+*Visibility Problem:*
+- Glossy black monitor screen and semi-gloss black frame blend into black void background
+- Difficult to distinguish monitor edges and appreciate monitor size/proportions
+- Lacks depth cues that real workspace would provide
+
+*Wall Solution:*
+- Light neutral wall (pale_wall texture with ceramic material) creates strong contrast
+- Dark monitor now clearly visible against light background
+- Mimics real workspace where desks typically positioned against walls
+- Adds environmental context and realism to scene
+
+*Design Decisions:*
+- **Width 25 units**: Extends 2.5 units beyond each table edge (table is 20 units) to ensure full background coverage from default camera angle
+- **Height 13 units**: Extends from ground (Y=-0.5) to upper background (Y=12.5), tall enough to frame entire scene
+- **Depth 1.0 units**: Substantial thickness per user requirement (not thin 0.1-0.2), creates solid wall appearance
+- **Position Z=-10**: At back table edge, far behind monitor (Z=-2.5 to -2.0) to avoid any depth conflicts
+- **Reuse pale_wall texture**: Already loaded asset, consistent with mug interior aesthetic
+- **Ceramic material values**: Proven matte finish, appropriate for interior wall surface
+
+**Updated Z-Depth Layout:**
+- **Wall**: Z=-10 (furthest back - background)
+- Monitor base/pole: Z=-2.5 (background)
+- Monitor screen/frame: Z=-2.05 to -2.0 (background)
+- Mug: Z=1.0 (midground)
+- Keyboard/Touchpad: Z=4.0 (foreground)
+- Enhanced depth separation with defined background boundary
+
+**Alternatives Considered:**
+
+- **Plane instead of box**: Rejected - box with 1.0 depth provides more substantial wall per user requirement
+- **New texture**: Rejected - pale_wall.jpg already loaded and appropriate for wall surface
+- **Darker wall color**: Rejected - light color needed for monitor contrast
+- **Smaller dimensions**: Rejected - 25x13 ensures complete background coverage from all normal viewing angles
+- **Position at Z=-5**: Rejected - Z=-10 (back table edge) provides better separation and realistic placement
+
+**Project Requirements Met:**
+
+- **Additional Object**: Wall counts as 7th scene object (table, mug, sphere, keyboard, touchpad, monitor, wall) ✓
+- **Simple Primitive**: Box mesh, low polygon count ✓
+- **Proper Transformations**: Scale → Rotate → Translate order maintained ✓
+- **Texture Application**: pale_wall.jpg with UV scaling ✓
+- **Material Definition**: Matte wall material with comprehensive Phong properties ✓
+- **Best Practices**: Function encapsulation, comprehensive comments, no code duplication ✓
+- **Visual Enhancement**: Significantly improves scene composition and monitor visibility ✓
+
+**Technical Implementation:**
+
+```cpp
+// Wall material (SceneManager.cpp:658-666)
+OBJECT_MATERIAL wallMaterial;
+wallMaterial.ambientColor = glm::vec3(0.34f);
+wallMaterial.ambientStrength = 0.16f;
+wallMaterial.diffuseColor = glm::vec3(0.60f);
+wallMaterial.specularColor = glm::vec3(0.02f);
+wallMaterial.shininess = 4.0f;
+wallMaterial.tag = "wall";
+
+// Wall transformations (SceneManager.cpp:1256-1260)
+glm::vec3 scaleXYZ = glm::vec3(25.0f, 13.0f, 1.0f);
+glm::vec3 positionXYZ = glm::vec3(0.0f, 6.0f, -10.0f);
+```
+
+**Visual Result:**
+Background wall transforms scene from objects floating in void to realistic workspace environment. Light-colored wall provides strong contrast making dark monitor clearly visible and distinguishable. Wall positioned at back table edge creates natural boundary and environmental context. Monitor now stands out as prominent background focal point against defined backdrop. Overall scene composition significantly improved with enhanced depth perception and realism.
+
+**References:**
+- TODO.md Phase 5a: Add Background Wall checklist
+- SceneManager.h:137: RenderWall() declaration
+- SceneManager.cpp:658-666: Wall material definition
+- SceneManager.cpp:1238-1265: RenderWall() implementation
+- SceneManager.cpp:688: RenderWall() called first in RenderScene()
