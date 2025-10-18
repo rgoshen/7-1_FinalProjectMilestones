@@ -35,22 +35,22 @@
 - [x] Call `RenderKeyboard()` in `RenderScene()`
 - [x] Test build and visual verification
 - [x] Update SUMMARY.md with implementation notes
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Commit changes
+- [x] Merge to main
 
 ---
 
 ## Phase 3: Add Touchpad Object
 **Branch:** `feature/add-touchpad`
 
-- [ ] Create feature branch from main
-- [ ] Create `RenderTouchpad()` method (uses existing box mesh)
-- [ ] Reuse or create material for touchpad
-- [ ] Position at right side (~x:4.5, z:1.0)
-- [ ] Scale as thin square (~2.0w x 0.08h x 2.5d)
-- [ ] Call `RenderTouchpad()` in `RenderScene()`
-- [ ] Test build and visual verification (4 objects total now)
-- [ ] Update SUMMARY.md with implementation notes
+- [x] Create feature branch from main
+- [x] Create `RenderTouchpad()` method (uses existing box mesh)
+- [x] Define touchpad material (reuses keyboard plastic material)
+- [x] Position to right of keyboard (2.0×2.0 square, smaller than keyboard)
+- [x] Two-layer design: black frame + minimally raised lighter surface
+- [x] Call `RenderTouchpad()` in `RenderScene()`
+- [x] Test build and visual verification (5 objects total now)
+- [x] Update SUMMARY.md with implementation notes
 - [ ] Commit changes
 - [ ] Merge to main
 
