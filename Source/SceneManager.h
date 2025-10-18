@@ -112,6 +112,7 @@ private:
 		std::string materialTag);
 
 	// Coffee mug rendering methods
+	void RenderMug();
 	void RenderMugBody();
 	void RenderMugInterior();
 	void RenderCoffee();

@@ -995,3 +995,238 @@ Monitor appears as modern flat-screen display with minimalist central stand behi
 - SceneManager.cpp:1033-1205: Monitor component implementations
 - SceneManager.cpp:636-657: Material definitions (semi_gloss_plastic, screen)
 - final_project_requirements.md: Complex object requirement, best practices guidelines
+
+---
+
+## [2025-10-17] Phase 5: Scene Composition Adjustments - Mug Refactoring and Repositioning
+
+**Change Type:** Refactor + Feature
+**Scope:** SceneManager
+**Branch:** `refactor/scene-adjustments`
+
+**Summary:**
+Refactored coffee mug rendering to use orchestrator pattern matching monitor implementation, then adjusted mug scale and position to better match reference image proportions and composition.
+
+**Changes Made:**
+
+1. **Refactored RenderMug() to Orchestrator Pattern**
+   - Created new `RenderMug()` orchestrator method in SceneManager.cpp:700-707
+   - Added `RenderMug()` declaration to SceneManager.h:115
+   - Updated `RenderScene()` to call `RenderMug()` instead of individual components
+   - Maintains consistency with `RenderMonitor()` pattern
+   - Improves code organization and encapsulation
+
+2. **Scaled Down Mug by 25%**
+   - Previous mug appeared too large relative to other desk objects
+   - Applied uniform 0.75x scale to all components and positions:
+     * MugBody: (1.2, 3.0, 1.2) → (0.9, 2.25, 0.9)
+     * MugInterior: (1.08, 2.7, 1.08) → (0.81, 2.025, 0.81)
+     * Coffee: (1.06, 2.6, 1.06) → (0.795, 1.95, 0.795)
+     * MugHandle: (0.8, 0.4, 0.3) → (0.6, 0.3, 0.225)
+     * MugBase: (0.95, 1.0, 0.95) → (0.7125, 0.75, 0.7125)
+     * m_mugVerticalOffset: -1.25 → -0.9375
+   - Scaled all Y positions proportionally to maintain alignment
+
+3. **Repositioned Mug Further Left**
+   - Initial position: X=0.0, Z=0.0 (center)
+   - First adjustment: X=-3.5, Z=2.5 (ERROR: moved forward incorrectly)
+   - Correction: X=-3.5, Z=0.0 (directly left only)
+   - Final position: X=-5.0, Z=0.0 (further left per reference image)
+   - Handle adjusted: X=-4.04 (maintains offset from mug center)
+
+**Rationale:**
+
+*Orchestrator Pattern Refactoring:*
+- Creates consistency with `RenderMonitor()` architecture
+- Improves code maintainability and readability
+- Follows best practices for function encapsulation
+- Makes high-level scene composition clear in `RenderScene()`
+
+*25% Scale Reduction:*
+- Reference image shows mug as secondary element, not dominant centerpiece
+- Previous scale made mug disproportionately large compared to keyboard and monitor
+- Smaller scale improves overall scene balance and realism
+- User confirmed improved proportions after scaling
+
+*Left Repositioning:*
+- Reference image shows mug positioned left of center
+- X=-5.0 aligns better with reference composition
+- Maintains Z=0.0 to keep mug in foreground plane
+- Creates visual separation from keyboard (centered at X=0.0)
+
+**Challenges:**
+
+*Challenge 1: Directional Movement Confusion*
+- Initial repositioning moved mug to X=-3.5, Z=2.5
+- User corrected: "I said directly left, you moved it forward too"
+- Learned: "Directly left" means only change X, not Z
+- Fixed by reverting Z to 0.0 for all components
+
+*Challenge 2: Handle Position Calculation*
+- Handle positioned relative to mug center
+- Original offset: 1.28 units right of center (X=0.0 + 1.28 = 1.28)
+- After scaling: 1.28 × 0.75 = 0.96
+- New position: X=-5.0 + 0.96 = -4.04 (maintains proportional offset)
+
+**Alternatives Considered:**
+
+- **Position first, then scale**: Rejected - scaling changes absolute positions, would require re-positioning
+- **Scale separately per component**: Rejected - non-uniform scaling would break proportional relationships
+- **Larger scale reduction (50%)**: Rejected - 25% provided good balance without making mug too small
+- **Center position**: Rejected - reference image shows left-of-center placement
+
+**Project Requirements Met:**
+
+- **Best Practices**: Improved encapsulation through orchestrator pattern ✓
+- **No Code Duplication**: Refactored to eliminate repeated component calls ✓
+- **Function Encapsulation**: Component methods called through orchestrator ✓
+- **Comprehensive Comments**: Updated comments reflect new positioning ✓
+
+**Next Steps:**
+- Adjust monitor width and position (appears too narrow in current view)
+- Adjust keyboard position and scale to match reference
+- Adjust touchpad position and scale to match reference
+- Adjust sphere position if needed for compositional balance
+
+**Visual Result:**
+Coffee mug now appears at appropriate desk accessory scale rather than oversized centerpiece. Positioned left of center creates asymmetric but balanced composition. All five components (body, interior, coffee, handle, base) maintain proportional relationships and proper alignment at new scale and position.
+
+**References:**
+- TODO.md Phase 5: Scene Composition Adjustments checklist
+- desk_scene.png: Reference image for composition and proportions
+- SceneManager.h:115-121: Mug render method declarations
+- SceneManager.cpp:700-707: RenderMug() orchestrator implementation
+- SceneManager.cpp:751-902: Individual mug component render methods
+- SceneManager.cpp:413: m_mugVerticalOffset adjustment
+
+---
+
+## [2025-10-17] Phase 5: Scene Composition Adjustments - Monitor Scaling and Repositioning
+
+**Change Type:** Feature
+**Scope:** SceneManager
+**Branch:** `refactor/scene-adjustments`
+
+**Summary:**
+Increased monitor width to better match reference image proportions, adjusted monitor position forward to bring it closer to keyboard, extended pole height for taller monitor, and increased base size for better stability appearance. Also fine-tuned mug position.
+
+**Changes Made:**
+
+1. **Increased Monitor Width (Maintaining 16:9 Aspect Ratio)**
+   - Frame width: 8.0 → 11.0 (37.5% increase)
+   - Frame height: 4.5 → 6.1875 (proportional increase for 16:9)
+   - Screen width: 7.6 → 10.6
+   - Screen height: 4.2 → 5.8875
+   - Monitor center Y: 4.25 → 5.09375
+
+2. **Extended Pole Height for Taller Monitor**
+   - Previous: Extended to 3/4 of 4.5 height = 3.375 units, pole height 5.075
+   - New: Extended to 3/4 of 6.1875 height = 4.640625 units, pole height 6.340625
+   - Pole center Y: 2.8375 → 3.4703125
+   - Maintains design principle: pole extends to 3/4 monitor height
+
+3. **Moved Monitor Forward (Closer to Keyboard)**
+   - Base Z: -5.8 → -2.5 (3.3 units forward)
+   - Pole Z: -5.8 → -2.5
+   - Connector Z: -5.688 → -2.388
+   - Frame Z: -5.35 → -2.05
+   - Screen Z: -5.30 → -2.0
+   - Now positioned behind mug but much closer to keyboard
+
+4. **Increased Monitor Base Size**
+   - Diameter: 1.8 → 2.5 (38.9% increase)
+   - Provides better visual stability for wider monitor
+   - Better proportions relative to 11.0-wide monitor frame
+
+5. **Adjusted Mug Position**
+   - Z position: 0.0 → 1.5 → 1.0 (final)
+   - Moved forward initially, then back slightly for better spacing
+   - Creates clear depth layering: monitor (-2.5 to -2.0), mug (1.0), keyboard (4.0)
+
+**Rationale:**
+
+*Monitor Width Increase:*
+- Reference image shows monitor as prominent background element
+- Previous 8.0 width appeared too narrow relative to 9.0-wide keyboard
+- 11.0 width creates better visual balance and matches reference proportions
+- Wider monitor requires taller monitor (16:9 ratio) and correspondingly taller pole
+
+*Forward Positioning:*
+- Previous Z=-5.8 to -5.3 positioned monitor far in background
+- Reference image shows monitor more integrated with desk workspace
+- New Z=-2.5 to -2.0 brings monitor forward while staying behind mug (Z=1.0)
+- Creates better depth layering and more cohesive scene composition
+
+*Larger Base:*
+- Wider monitor needs proportionally larger base for visual stability
+- 1.8 diameter appeared too small under 11.0-wide monitor
+- 2.5 diameter provides better visual foundation
+- Maintains flattened sphere design (0.15 height)
+
+*Mug Adjustment:*
+- Initial forward move (Z=1.5) positioned mug too close to keyboard
+- Final position (Z=1.0) provides better spacing between foreground/midground elements
+- Maintains clear visual separation from monitor in background
+
+**Iteration Process:**
+
+*Iteration 1: Width Increase*
+- Increased monitor frame to 11.0 x 6.1875
+- Adjusted screen proportionally to 10.6 x 5.8875
+- Built and tested
+
+*Iteration 2: Pole Extension*
+- Extended pole height from 5.075 to 6.340625
+- Adjusted pole center Y from 2.8375 to 3.4703125
+- Adjusted connector Y to match new monitor center (5.09375)
+- Built and tested
+
+*Iteration 3: Forward Positioning*
+- Moved mug forward: Z=0.0 → Z=1.5
+- Moved all monitor components forward 3.3+ units
+- Built and tested - user feedback: monitor positioning better
+
+*Iteration 4: Final Adjustments*
+- User feedback: "mug can move a little back, base needs to be bigger"
+- Moved mug back: Z=1.5 → Z=1.0
+- Increased base: 1.8 → 2.5 diameter
+- Final configuration approved
+
+**Current Z-Depth Layout:**
+- Monitor base/pole: Z=-2.5 (furthest back)
+- Monitor screen/frame: Z=-2.05 to -2.0 (background)
+- Mug: Z=1.0 (midground)
+- Keyboard: Z=4.0 (foreground)
+- Touchpad: Z=4.0 (foreground)
+- Clear depth separation creates proper layering
+
+**Alternatives Considered:**
+
+- **Smaller width increase (9.0 or 10.0)**: Rejected - 11.0 provides best visual balance with keyboard
+- **Non-proportional scaling**: Rejected - maintaining 16:9 aspect ratio is critical for realism
+- **Keep monitor far back**: Rejected - reference image shows monitor more integrated with desk
+- **Smaller base (2.0)**: Rejected - 2.5 provides better proportions for 11.0-wide monitor
+- **Mug at Z=1.5**: Rejected - too close to keyboard, Z=1.0 provides better spacing
+
+**Project Requirements Met:**
+
+- **Proper Transformations**: All adjustments maintain Scale → Rotate → Translate order ✓
+- **Proportional Scaling**: 16:9 aspect ratio preserved throughout width increase ✓
+- **Best Practices**: Comments updated to reflect new dimensions and positioning ✓
+- **Visual Coherence**: Depth layering creates clear foreground/midground/background ✓
+
+**Next Steps:**
+- Adjust keyboard position and scale to match reference
+- Adjust touchpad position and scale to match reference
+- Adjust sphere position if needed for compositional balance
+- Verify camera position provides good initial view
+- Test navigation and verify no collisions from multiple angles
+
+**Visual Result:**
+Monitor now appears as substantial background focal point with proper proportions. Wider 11.0 screen creates better visual weight matching keyboard width. Forward positioning integrates monitor with desk workspace while maintaining clear depth separation. Larger 2.5 base provides stable foundation for taller, wider monitor. Mug at Z=1.0 creates clear midground layer between monitor background and keyboard foreground.
+
+**References:**
+- TODO.md Phase 5: Scene Composition Adjustments checklist
+- desk_scene.png: Reference image for monitor proportions and positioning
+- SceneManager.cpp:1075-1228: Monitor component implementations (base, pole, connector, frame, screen)
+- SceneManager.cpp:758-894: Mug component Z-position adjustments
