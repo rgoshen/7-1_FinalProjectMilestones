@@ -477,44 +477,52 @@ void SceneManager::LoadSceneTextures()
 /***********************************************************
  *  DefineLights()
  *
- *  This method defines four directional lights that simulate
- *  natural sunlight entering through a high window (80° elevation,
- *  45° azimuth) with soft ambient fill from the environment.
+ *  This method defines five directional lights that simulate
+ *  natural sunlight with enhanced indoor fill lighting to eliminate
+ *  dark shadows per instructor feedback.
  ***********************************************************/
 void SceneManager::DefineLights()
 {
-	// Light 0 – Sunlight (warm, primary)
-	// Direction: 65° elevation, 45° azimuth
-	m_dirLights[0].direction = glm::normalize(glm::vec3(0.28f, 0.80f, 0.12f));
-	m_dirLights[0].ambient = glm::vec3(0.12f, 0.12f, 0.13f);
-	m_dirLights[0].diffuse = glm::vec3(0.95f, 0.90f, 0.83f);
-	m_dirLights[0].specular = glm::vec3(0.22f);
+	// Light 0 – Sunlight (warm sunset, primary)
+	// Direction: Lowered to ~35° elevation for sunset angle
+	m_dirLights[0].direction = glm::normalize(glm::vec3(0.50f, 0.57f, 0.20f));
+	m_dirLights[0].ambient = glm::vec3(0.14f, 0.10f, 0.08f);  // Warmer ambient
+	m_dirLights[0].diffuse = glm::vec3(1.0f, 0.75f, 0.55f);   // Sunset orange/red tones
+	m_dirLights[0].specular = glm::vec3(0.25f, 0.18f, 0.12f); // Warm specular
 	m_dirLights[0].focalStrength = 24.0f;
 	m_dirLights[0].specularIntensity = 0.15f;
 
-	// Light 1 – Sky Fill (cool, opposite direction)
+	// Light 1 – Sky Fill (cool, opposite direction) - BRIGHTENED
 	m_dirLights[1].direction = glm::normalize(glm::vec3(-0.123f, 0.985f, -0.123f));
-	m_dirLights[1].ambient = glm::vec3(0.02f, 0.02f, 0.03f);
-	m_dirLights[1].diffuse = glm::vec3(0.22f, 0.26f, 0.34f);
+	m_dirLights[1].ambient = glm::vec3(0.04f, 0.04f, 0.05f);  // Increased from 0.02
+	m_dirLights[1].diffuse = glm::vec3(0.38f, 0.42f, 0.50f);  // Increased from (0.22, 0.26, 0.34)
 	m_dirLights[1].specular = glm::vec3(0.0f);
 	m_dirLights[1].focalStrength = 12.0f;
 	m_dirLights[1].specularIntensity = 0.0f;
 
-	// Light 2 – Wall Bounce (warm, low side fill)
+	// Light 2 – Wall Bounce (warm, low side fill) - BRIGHTENED
 	m_dirLights[2].direction = glm::normalize(glm::vec3(-0.612f, 0.500f, -0.612f));
-	m_dirLights[2].ambient = glm::vec3(0.01f);
-	m_dirLights[2].diffuse = glm::vec3(0.14f, 0.12f, 0.10f); // lower
+	m_dirLights[2].ambient = glm::vec3(0.02f);  // Increased from 0.01
+	m_dirLights[2].diffuse = glm::vec3(0.28f, 0.24f, 0.20f);  // Doubled from (0.14, 0.12, 0.10)
 	m_dirLights[2].specular = glm::vec3(0.0f);
 	m_dirLights[2].focalStrength = 10.0f;
 	m_dirLights[2].specularIntensity = 0.0f;
 
-	// Light 3 – Back Fill (neutral, subtle)
+	// Light 3 – Back Fill (neutral, subtle) - BRIGHTENED
 	m_dirLights[3].direction = glm::normalize(glm::vec3(-0.683f, 0.259f, 0.683f));
-	m_dirLights[3].ambient = glm::vec3(0.01f);
-	m_dirLights[3].diffuse = glm::vec3(0.08f); // lower
+	m_dirLights[3].ambient = glm::vec3(0.02f);  // Increased from 0.01
+	m_dirLights[3].diffuse = glm::vec3(0.18f);  // More than doubled from 0.08
 	m_dirLights[3].specular = glm::vec3(0.0f);
 	m_dirLights[3].focalStrength = 8.0f;
 	m_dirLights[3].specularIntensity = 0.0f;
+
+	// Light 4 – Overhead Indoor (neutral, direct downward)
+	m_dirLights[4].direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));  // Straight down
+	m_dirLights[4].ambient = glm::vec3(0.03f);
+	m_dirLights[4].diffuse = glm::vec3(0.25f, 0.25f, 0.28f);  // Neutral cool white
+	m_dirLights[4].specular = glm::vec3(0.0f);
+	m_dirLights[4].focalStrength = 16.0f;
+	m_dirLights[4].specularIntensity = 0.0f;
 }
 
 /***********************************************************

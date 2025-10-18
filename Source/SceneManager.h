@@ -68,7 +68,7 @@ private:
 	std::vector<OBJECT_MATERIAL> m_objectMaterials;
 
 	// directional lights for scene illumination
-	static constexpr int NUM_DIR_LIGHTS = 4;
+	static constexpr int NUM_DIR_LIGHTS = 5;
 	DIRECTIONAL_LIGHT m_dirLights[NUM_DIR_LIGHTS];
 
 	// load texture images and convert to OpenGL texture data
