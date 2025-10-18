@@ -121,6 +121,7 @@ private:
 
 	// Desk object rendering methods
 	void RenderBlueSphere();
+	void RenderKeyboard();
 
 	// Texture and material setup methods
 	void LoadSceneTextures();
