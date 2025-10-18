@@ -1348,3 +1348,106 @@ Background wall transforms scene from objects floating in void to realistic work
 - SceneManager.cpp:658-666: Wall material definition
 - SceneManager.cpp:1238-1265: RenderWall() implementation
 - SceneManager.cpp:688: RenderWall() called first in RenderScene()
+
+---
+
+## [2025-10-17] Phase 6: Verify Partial Texture Requirement
+
+**Change Type:** Feature
+**Scope:** SceneManager
+**Branch:** `feature/partial-texture`
+
+**Summary:**
+Verified and implemented partial texture mapping requirement by modifying blue sphere to use partial UV coordinates, displaying only a portion of the rubber texture.
+
+**Project Requirement:**
+Final project requires demonstration of two texture techniques:
+1. **Tiled Texture**: At least one texture with UV scale > 1.0 (repeats texture)
+2. **Partial Texture**: At least one texture displaying only a portion of the image
+
+**Audit Results:**
+
+Examined all texture UV coordinates in scene:
+- Table: 6.0x6.0 - **TILED** ✓ (meets tiling requirement)
+- Mug body: 2.0x1.0 - Tiled
+- Mug interior: 1.0x1.0 - Full texture
+- Mug handle: 1.0x1.0 - Full texture
+- Mug base: 1.0x1.0 - Full texture
+- Wall: 2.0x2.0 - Tiled
+- Sphere: 1.0x1.0 - Full texture (needs modification)
+- Keyboard/Touchpad: Solid colors (no texture)
+- Monitor: Solid colors (no texture)
+
+**Finding:** Tiling requirement met (table), but NO partial texture implementation found.
+
+**Implementation:**
+
+Modified blue sphere (stress ball) to use **partial texture mapping**:
+
+```cpp
+// Before (SceneManager.cpp:931)
+SetTextureUVScale(1.0f, 1.0f);  // Full texture
+
+// After (SceneManager.cpp:931)
+SetTextureUVScale(0.75f, 0.75f);  // Displays upper-left 75% of texture (partial texture)
+```
+
+**Changes Made:**
+
+1. **Updated RenderBlueSphere() Method**
+   - Changed UV scale from 1.0x1.0 to 0.75x0.75
+   - Added comment documenting partial texture technique
+   - UV coordinates now span 0.0-0.75 instead of full 0.0-1.0 range
+
+2. **Iteration Process**
+   - Initial attempt: 0.5x0.5 (shows upper-left quarter)
+   - User feedback: Too dramatic a change
+   - Final: 0.75x0.75 (shows upper-left 75%, more subtle)
+
+**Rationale:**
+
+*Why Sphere:*
+- Simple spherical UV mapping makes partial texture effect clear
+- Rubber texture has enough detail to show difference
+- Non-critical object (visual change won't impact scene composition)
+- Already textured (no new texture loading required)
+
+*Why 0.75x0.75:*
+- Clearly demonstrates partial texture (not full 0.0-1.0 range)
+- More subtle than 0.5x0.5 (quarter texture)
+- Slight zoom/detail effect maintains visual quality
+- Meets requirement without dramatic visual change
+
+*UV Scale < 1.0 Explanation:*
+- UV scale 0.75 means coordinates go from 0.0 to 0.75 (not 0.0 to 1.0)
+- Displays only first 75% of texture in each dimension
+- That 75% portion is stretched to cover entire geometry
+- Creates "zoomed-in" or "detail view" of texture portion
+
+**Project Requirements Met:**
+
+- **Tiled Texture**: Table oak wood at 6.0x6.0 ✓
+- **Partial Texture**: Sphere rubber coating at 0.75x0.75 ✓
+- **Both Techniques Demonstrated**: Scene now shows both required texture mapping methods ✓
+
+**Alternatives Considered:**
+
+- **0.5x0.5 UV scale**: Rejected - too dramatic, showed only quarter of texture
+- **Apply to different object**: Rejected - sphere is simplest and least disruptive
+- **Use texture offset instead**: Rejected - UV scale is simpler and more direct
+- **0.9x0.9 UV scale**: Rejected - too subtle, might not clearly demonstrate technique
+
+**Technical Note:**
+
+Partial texture (UV < 1.0) vs Tiled texture (UV > 1.0):
+- **Tiled (6.0x6.0)**: Repeats texture 6 times in each direction across surface
+- **Partial (0.75x0.75)**: Shows only 75% of texture, stretched across entire surface
+- Both are advanced texture mapping techniques beyond basic 1:1 mapping
+
+**Visual Result:**
+Blue sphere now displays a slightly zoomed/detailed view of the rubber coating texture, showing only the upper-left 75% portion. The effect is subtle but demonstrates the partial texture requirement. Combined with table's tiled oak wood, the scene now successfully demonstrates both required complex texturing techniques.
+
+**References:**
+- TODO.md Phase 6: Verify Partial Texture Requirement checklist
+- final_project_requirements.md: Texture requirements section
+- SceneManager.cpp:927-932: RenderBlueSphere() with partial texture implementation

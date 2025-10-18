@@ -926,9 +926,9 @@ void SceneManager::RenderMugBase()
  ***********************************************************/
 void SceneManager::RenderBlueSphere()
 {
-	// Apply rubber coating texture
+	// Apply rubber coating texture with PARTIAL UV mapping (Complex Texturing Technique Requirement)
 	SetShaderTexture("rubber");
-	SetTextureUVScale(1.0f, 1.0f);
+	SetTextureUVScale(0.75f, 0.75f);  // Displays upper-left 75% of texture (partial texture)
 	SetShaderMaterial("rubber");
 
 	// Set transformations for sphere
