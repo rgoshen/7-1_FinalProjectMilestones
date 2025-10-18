@@ -139,19 +139,19 @@
 ## Phase 5a: Add Background Wall
 **Branch:** `feature/add-wall`
 
-- [ ] Create feature branch from main
-- [ ] Create `RenderWall()` method in SceneManager
-- [ ] Add wall declaration to SceneManager.h
-- [ ] Position wall behind monitor (Z=-4.0 or similar)
-- [ ] Use large vertical plane or thin box (25w x 12h x 0.1d)
-- [ ] Apply light neutral texture or color (pale wall texture or light gray)
-- [ ] Add wall material to `DefineObjectMaterials()` if needed
-- [ ] Call `RenderWall()` in `RenderScene()`
-- [ ] Test build and visual verification
-- [ ] Verify monitor visibility improved against light background
-- [ ] Update SUMMARY.md with wall implementation notes
-- [ ] Commit changes
-- [ ] Merge to main
+- [x] Create feature branch from main
+- [x] Create `RenderWall()` method in SceneManager
+- [x] Add wall declaration to SceneManager.h
+- [x] Position wall behind monitor at back table edge (Z=-10)
+- [x] Use large box (25w x 13h x 1.0d - wider than table, ground to upper background)
+- [x] Apply pale_wall.jpg texture with 2x2 UV scale
+- [x] Add wall material to `DefineObjectMaterials()` (ceramic material values)
+- [x] Call `RenderWall()` in `RenderScene()` (first, before all objects)
+- [x] Test build and visual verification
+- [x] Verify monitor visibility improved against light background
+- [x] Update SUMMARY.md with wall implementation notes
+- [x] Commit changes
+- [x] Merge to main
 
 **Rationale:** Dark monitor against black background lacks contrast. Light-colored wall will make monitor stand out clearly and add realism to desk workspace setting.
 
