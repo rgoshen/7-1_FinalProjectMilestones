@@ -406,6 +406,9 @@ void SceneManager::PrepareScene()
 	// Load sphere for stress ball
 	m_basicMeshes->LoadSphereMesh();
 
+	// Load cone for monitor stand connector
+	m_basicMeshes->LoadConeMesh();
+
 	// Set vertical adjustment for mug components
 	m_mugVerticalOffset = -1.25f;  // Adjusted so mug sits properly on base (only half of base visible)
 
@@ -631,6 +634,26 @@ void SceneManager::DefineObjectMaterials()
 	plasticMaterial.shininess = 12.0f;
 	plasticMaterial.tag = "plastic";
 	m_objectMaterials.push_back(plasticMaterial);
+
+	// Semi-gloss plastic for monitor frame
+	OBJECT_MATERIAL semiGlossPlasticMaterial;
+	semiGlossPlasticMaterial.ambientColor = glm::vec3(0.02f, 0.02f, 0.02f);
+	semiGlossPlasticMaterial.ambientStrength = 0.15f;
+	semiGlossPlasticMaterial.diffuseColor = glm::vec3(0.08f, 0.08f, 0.08f);
+	semiGlossPlasticMaterial.specularColor = glm::vec3(0.15f, 0.15f, 0.15f);
+	semiGlossPlasticMaterial.shininess = 28.0f;
+	semiGlossPlasticMaterial.tag = "semi_gloss_plastic";
+	m_objectMaterials.push_back(semiGlossPlasticMaterial);
+
+	// Glossy black screen for monitor display
+	OBJECT_MATERIAL screenMaterial;
+	screenMaterial.ambientColor = glm::vec3(0.01f, 0.01f, 0.01f);
+	screenMaterial.ambientStrength = 0.1f;
+	screenMaterial.diffuseColor = glm::vec3(0.02f, 0.02f, 0.02f);
+	screenMaterial.specularColor = glm::vec3(0.3f, 0.3f, 0.3f);
+	screenMaterial.shininess = 64.0f;
+	screenMaterial.tag = "screen";
+	m_objectMaterials.push_back(screenMaterial);
 }
 
 /***********************************************************
@@ -665,6 +688,7 @@ void SceneManager::RenderScene()
 	RenderBlueSphere();
 	RenderKeyboard();
 	RenderTouchpad();
+	RenderMonitor();
 }
 
 /***********************************************************
@@ -1002,6 +1026,188 @@ void SceneManager::RenderTouchpad()
 	m_basicMeshes->DrawBoxMesh();
 
 	// Restore texture state for subsequent draws
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderMonitor()
+ *
+ *  Renders complete flat screen monitor with stand by calling
+ *  component render methods in proper sequence.
+ *
+ *  ARTISTIC CHOICE: Modern minimalist monitor design with
+ *  central stand creates professional workspace aesthetic.
+ *  Positioned behind keyboard as visual focal point.
+ ***********************************************************/
+void SceneManager::RenderMonitor()
+{
+	RenderMonitorBase();
+	RenderMonitorPole();
+	RenderMonitorConnector();
+	RenderMonitorFrame();
+	RenderMonitorScreen();
+}
+
+/***********************************************************
+ *  RenderMonitorBase()
+ *
+ *  Renders monitor stand base as flattened sphere.
+ *
+ *  ARTISTIC CHOICE: Flattened sphere creates modern, stable
+ *  base design similar to contemporary monitor stands.
+ ***********************************************************/
+void SceneManager::RenderMonitorBase()
+{
+	// Disable textures - using solid colors
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Set transformations for flattened sphere base
+	glm::vec3 scaleXYZ = glm::vec3(1.8f, 0.15f, 1.8f);  // Flattened sphere for stability
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 0.15f, -5.8f);  // Behind mug, aligned with post
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawSphereMesh();
+
+	// Restore texture state
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderMonitorPole()
+ *
+ *  Renders monitor stand pole as tall thin rectangle.
+ *
+ *  ARTISTIC CHOICE: Thin rectangular pole provides minimal
+ *  visual obstruction while supporting monitor display.
+ ***********************************************************/
+void SceneManager::RenderMonitorPole()
+{
+	// Disable textures - using solid colors
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Set transformations for vertical rectangular pole
+	// Monitor bottom at Y=2.0, height=4.5, so top at Y=6.5
+	// Pole extends to 3/4 monitor height = 3.375, so top at Y=5.375
+	// Pole goes from Y=0.3 (base top) to Y=5.375, height=5.075, center at Y=2.8375
+	glm::vec3 scaleXYZ = glm::vec3(0.5f, 5.075f, 0.2f);  // Wide thin rectangle
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 2.8375f, -5.8f);  // Centered on base, behind monitor
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Restore texture state
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderMonitorConnector()
+ *
+ *  Renders connector as small horizontal cylinder bridging
+ *  post to monitor back.
+ *
+ *  ARTISTIC CHOICE: Horizontal cylinder arm connects post
+ *  to monitor center, parallel to desk surface.
+ ***********************************************************/
+void SceneManager::RenderMonitorConnector()
+{
+	// Disable textures - using solid colors
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Set transformations for horizontal cylinder connector
+	// Connects post front (Z=-5.7) to monitor back (Z=-5.5)
+	// Cylinder rotated 90° on X-axis to make it horizontal (pointing in Z direction)
+	// Post front at -5.7, monitor back at -5.5, extend into both for solid connection
+	// Center at -5.625, extends from -5.8 (into post) to -5.45 (into monitor back)
+	glm::vec3 scaleXYZ = glm::vec3(0.15f, 0.35f, 0.15f);  // Horizontal cylinder, length 0.35
+	float XrotationDegrees = 90.0f;  // Rotate to horizontal (point in Z direction)
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.684f);  // Centered between post and monitor back
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawCylinderMesh();
+
+	// Restore texture state
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderMonitorFrame()
+ *
+ *  Renders monitor outer frame/bezel as thin rectangle.
+ *
+ *  ARTISTIC CHOICE: Semi-gloss black frame with 16:9 aspect
+ *  ratio creates realistic modern monitor appearance.
+ ***********************************************************/
+void SceneManager::RenderMonitorFrame()
+{
+	// Disable textures - using solid colors
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("semi_gloss_plastic");
+	SetShaderColor(0.08f, 0.08f, 0.08f, 1.0f);
+
+	// Set transformations for monitor frame
+	glm::vec3 scaleXYZ = glm::vec3(8.0f, 4.5f, 0.3f);  // 16:9 aspect ratio
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.35f);  // Lowered: bottom at Y=2.0, top at Y=6.5
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Restore texture state
+	m_pShaderManager->setIntValue("bUseTexture", true);
+	SetTextureUVScale(1.0f, 1.0f);
+}
+
+/***********************************************************
+ *  RenderMonitorScreen()
+ *
+ *  Renders monitor display screen as glossy black rectangle.
+ *
+ *  ARTISTIC CHOICE: Glossy black screen with high specular
+ *  creates realistic powered-off LCD display appearance.
+ ***********************************************************/
+void SceneManager::RenderMonitorScreen()
+{
+	// Disable textures - using solid colors
+	m_pShaderManager->setIntValue("bUseTexture", false);
+	SetShaderMaterial("screen");
+	SetShaderColor(0.02f, 0.02f, 0.02f, 1.0f);
+
+	// Set transformations for screen (slightly smaller than frame, inset)
+	glm::vec3 scaleXYZ = glm::vec3(7.6f, 4.2f, 0.25f);  // Smaller than frame
+	float XrotationDegrees = 0.0f;
+	float YrotationDegrees = 0.0f;
+	float ZrotationDegrees = 0.0f;
+	glm::vec3 positionXYZ = glm::vec3(0.0f, 4.25f, -5.30f);  // Aligned with frame center, slightly forward
+
+	SetTransformations(scaleXYZ, XrotationDegrees, YrotationDegrees,
+		ZrotationDegrees, positionXYZ);
+	m_basicMeshes->DrawBoxMesh();
+
+	// Restore texture state
 	m_pShaderManager->setIntValue("bUseTexture", true);
 	SetTextureUVScale(1.0f, 1.0f);
 }

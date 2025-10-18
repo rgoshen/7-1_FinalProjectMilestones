@@ -1,6 +1,6 @@
 # TODO - CS 330 Final Project Completion
 
-**Current Status:** 1 complex object (coffee mug). Need 3 more objects + lighting improvements.
+**Current Status:** 6 objects completed (mug, sphere, keyboard, touchpad, table, monitor) + 5-light system.
 
 **Strategy:** Incremental development - one feature branch per object/enhancement.
 
@@ -72,6 +72,35 @@
 - [x] Adjust Light 0 for sunset: lower elevation (~35°), add warm orange/red tones
 - [x] Test build and visual verification (no dark shadows)
 - [x] Update SUMMARY.md with lighting rationale
+- [x] Commit changes
+- [x] Merge to main
+
+---
+
+## Phase 4a: Add Monitor Object
+**Branch:** `feature/add-monitor`
+
+- [x] Create feature branch from main
+- [x] Load cone mesh in `PrepareScene()` for connector
+- [x] Create `RenderMonitor()` orchestrator method with five components:
+  - [x] Monitor screen (thin box, 16:9 aspect ratio 7.6w x 4.2h x 0.25d)
+  - [x] Monitor frame (thin box, 16:9 aspect ratio 8.0w x 4.5h x 0.3d)
+  - [x] Stand pole (rectangular box, vertical support 0.5w x 5.075h x 0.2d)
+  - [x] Stand base (flattened sphere 1.8 diameter x 0.15 height)
+  - [x] Connector (horizontal cylinder 0.15 diameter x 0.35 length)
+- [x] Define monitor materials in `DefineObjectMaterials()`:
+  - [x] Glossy black screen material (shininess 64.0 for high gloss)
+  - [x] Semi-gloss plastic frame material (shininess 28.0)
+  - [x] Matte plastic for base/pole/connector (reused existing material)
+- [x] Position monitor behind mug (Z=-5.8 to -5.3)
+  - [x] Screen/Frame: centered at Y=4.25, Z=-5.35/-5.30
+  - [x] Pole: extends from base to 3/4 monitor height
+  - [x] Base: on desk surface at Z=-5.8
+  - [x] Connector: bridges pole to monitor back at Z=-5.684
+- [x] Refactored to component methods (RenderMonitorBase, Pole, Connector, Frame, Screen)
+- [x] Call `RenderMonitor()` in `RenderScene()`
+- [x] Test build and visual verification
+- [x] Update SUMMARY.md with implementation notes
 - [ ] Commit changes
 - [ ] Merge to main
 
@@ -81,6 +110,10 @@
 **Branch:** `refactor/scene-adjustments`
 
 - [ ] Create feature branch from current state
+- [ ] Refactor RenderMug pattern to match RenderMonitor
+  - [ ] Create RenderMug() method that calls component methods
+  - [ ] Update RenderScene() to call RenderMug() instead of individual components
+  - [ ] Maintains same pattern: orchestrator function calls sub-components
 - [ ] Review overall scene composition and proportions
 - [ ] Adjust object positions for optimal spacing and balance
 - [ ] Fine-tune object scales for realistic proportions relative to each other

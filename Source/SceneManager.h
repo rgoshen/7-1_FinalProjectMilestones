@@ -124,6 +124,14 @@ private:
 	void RenderKeyboard();
 	void RenderTouchpad();
 
+	// Monitor rendering methods
+	void RenderMonitor();
+	void RenderMonitorBase();
+	void RenderMonitorPole();
+	void RenderMonitorConnector();
+	void RenderMonitorFrame();
+	void RenderMonitorScreen();
+
 	// Texture and material setup methods
 	void LoadSceneTextures();
 	void DefineObjectMaterials();
